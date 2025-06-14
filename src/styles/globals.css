@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+
+  :root {
+    --color-green-700: #5e7c65;
+    --color-green-100: #eaf4ea;
+    --color-yellow-500: #f6bb6b;
+    --color-yellow-400: #ffe082;
+  }
+
+  body {
+    @apply bg-green-50 text-gray-900;
+  }
+
+  /* Ensure overlay does not block pointer events */
+  .before\:absolute:before {
+    pointer-events: none;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-br from-light-green-start to-light-green-end;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-dark-green-start to-dark-green-end;
+  }
+
+  .btn-primary {
+    @apply px-6 py-2 bg-orange-cream text-white rounded-lg font-body 
+           transition-all duration-300 ease-in-out
+           hover:shadow-lg hover:scale-105
+           focus:outline-none focus:ring-2 focus:ring-orange-cream/50;
+  }
+
+  .product-card {
+    @apply bg-white rounded-2xl p-6 shadow-md
+           transition-all duration-300 ease-in-out
+           hover:translate-y-[-6px] hover:shadow-xl
+           border border-transparent hover:border-orange-cream/30;
+  }
+
+  .category-title {
+    @apply font-display text-2xl text-white
+           relative after:content-[''] after:absolute after:bottom-0 after:left-0
+           after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-orange-cream after:to-yellow-400
+           after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  .chat-bubble {
+    @apply animate-fade-up rounded-2xl p-4 max-w-[80%] mb-4
+           transition-all duration-300 ease-in-out;
+  }
+
+  .chat-bubble-user {
+    @apply chat-bubble bg-orange-cream text-white ml-auto;
+  }
+
+  .chat-bubble-assistant {
+    @apply chat-bubble bg-white/90 backdrop-blur-sm text-dark-green-start;
+  }
+
+  .summary-bar {
+    @apply fixed bottom-0 left-0 right-0 bg-gradient-to-r from-white to-light-green-start/30
+           backdrop-blur-sm border-t border-light-green-start/20
+           transition-all duration-300 ease-in-out;
+  }
+}
+
+@layer utilities {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-light-green-start/20;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-green-start/30 rounded-full
+           hover:bg-dark-green-start/50 transition-colors duration-200;
+  }
+
+  :focus {
+    outline: 2px solid #33623f;
+    outline-offset: 2px;
+  }
+
+  .chat-input input[type='text']:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Custom Button Animations: Next Button Shimmer */
+@keyframes next-btn-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.btn-next-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #5e7c65 0%, #ffe082 50%, #5e7c65 100%);
+  background-size: 200% 100%;
+  animation: next-btn-shimmer 1.2s linear 1;
+  /* Keep other button styles intact */
+}
+
+/* Shimmer Effects for AI Buttons */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, #ffe082 0%, #f6bb6b 50%, #ffe082 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 1.5s infinite;
+}
+
+body > div.relative:before {
+  pointer-events: none !important;
+} 
