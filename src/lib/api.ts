@@ -1,6 +1,6 @@
 import { Product, ChatContext, ChatMessage } from '../types';
 
-const API_BASE = 'https://brightside-light-shopify-assistant.onrender.com/api/v1';
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'https://brightside-light-shopify-assistant.onrender.com/api/v1';
 
 export async function fetchProducts(filters: object, limit: number = 3): Promise<Product[]> {
   try {
