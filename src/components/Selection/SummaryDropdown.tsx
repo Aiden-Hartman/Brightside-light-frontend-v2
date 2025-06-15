@@ -33,13 +33,13 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     setError(null);
 
     // Access and log both env variables
-    const sellingPlanId = process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID;
+    const sellingPlanId = process.env.REACT_APP_SUBSCRIPTION_PLAN_ID;
     const reactAppUrl = process.env.NEXT_PUBLIC_REACT_APP_URL;
     console.log('[DEBUG] selectedProducts:', selectedProducts);
     console.log('[DEBUG] sellingPlanId:', sellingPlanId);
     console.log('[DEBUG] reactAppUrl:', reactAppUrl);
     if (!sellingPlanId) {
-      console.warn('[WARNING] NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID is missing or undefined!');
+      console.warn('[WARNING] REACT_APP_SUBSCRIPTION_PLAN_ID is missing or undefined!');
     }
     if (!reactAppUrl) {
       console.warn('[WARNING] NEXT_PUBLIC_REACT_APP_URL is missing or undefined!');
