@@ -32,25 +32,32 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     setIsLoading(true);
     setError(null);
 
-    // Access the env variable inside the function
+    // Access and log both env variables
     const sellingPlanId = process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID;
+    const reactAppUrl = process.env.NEXT_PUBLIC_REACT_APP_URL;
     console.log('[DEBUG] selectedProducts:', selectedProducts);
     console.log('[DEBUG] sellingPlanId:', sellingPlanId);
+    console.log('[DEBUG] reactAppUrl:', reactAppUrl);
     if (!sellingPlanId) {
       console.warn('[WARNING] NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID is missing or undefined!');
     }
+    if (!reactAppUrl) {
+      console.warn('[WARNING] NEXT_PUBLIC_REACT_APP_URL is missing or undefined!');
+    }
 
-    // Build items array, filtering out invalid entries
-    const items = selectedProducts
-      .filter(product => product.variant_id && sellingPlanId)
-      .map(product => ({
-        id: product.variant_id,
-        quantity: 1,
-        selling_plan: sellingPlanId
-      }));
-    console.log('[DEBUG] items to submit:', items);
+    // Build items array directly from selectedProducts
+    const items = selectedProducts.map(product => ({
+      id: product.variant_id,
+      quantity: 1,
+      selling_plan: sellingPlanId
+    }));
+    console.log('[DEBUG] items mapped from selectedProducts:', items);
 
-    if (items.length === 0) {
+    // Filter out any items with missing id or selling_plan
+    const validItems = items.filter(item => item.id && item.selling_plan);
+    console.log('[DEBUG] validItems to submit:', validItems);
+
+    if (validItems.length === 0) {
       setError('No valid products to subscribe.');
       setIsLoading(false);
       return;
@@ -59,7 +66,7 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     // Prepare the message object
     const message = {
       type: "ADD_SUBSCRIPTION_TO_CART",
-      payload: { items }
+      payload: { items: validItems }
     };
     console.log('[DEBUG] postMessage object:', message);
 
