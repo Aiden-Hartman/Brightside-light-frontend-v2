@@ -22,6 +22,48 @@ function sortByTier(products: Product[]): Product[] {
 }
 
 const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, total, open, onToggle }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubscribe = async () => {
+    if (selectedProducts.length === 0) return;
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Prepare cart items with subscription plan
+      const items = selectedProducts.map(product => ({
+        id: product.variant_id,
+        quantity: 1,
+        selling_plan: process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID
+      }));
+
+      // Add items to Shopify cart
+      const response = await fetch("/cart/add.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add items to cart');
+      }
+
+      // Redirect to Shopify cart
+      if (window.top) {
+        window.top.location.href = "/cart";
+      } else {
+        window.location.href = "/cart";
+      }
+    } catch (err) {
+      console.error('Subscription checkout error:', err);
+      setError('Failed to process subscription. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="mb-4 rounded-2xl shadow-lg overflow-hidden">
       <button
@@ -40,7 +82,7 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
           ▾
         </motion.span>
       </button>
-      <AnimatePresence initial={false}>
+      <AnimatePresence>
         {open && (
           <motion.div
             key="content"
@@ -57,27 +99,42 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
               {selectedProducts.length === 0 ? (
                 <div className="text-dark-green-start/70 py-4 text-center">No products selected yet.</div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                  {sortByTier(selectedProducts).map((product) => (
-                    <div key={product.id} className="flex flex-col items-center glass-panel rounded-xl p-3">
-                      <img 
-                        src={product.image_url || '/placeholder.png'} 
-                        alt={product.title} 
-                        className="h-16 w-16 object-contain rounded-lg mb-2"
-                      />
-                      <div className="font-display text-dark-green-start text-center text-base mb-1">{product.title}</div>
-                      <div className="font-body text-orange-cream font-bold text-sm mb-1">${product.price.toFixed(2)}</div>
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {sortByTier(selectedProducts).map((product) => (
+                      <div key={product.id} className="flex flex-col items-center glass-panel rounded-xl p-3">
+                        <img 
+                          src={product.image_url || '/placeholder.png'} 
+                          alt={product.title} 
+                          className="h-16 w-16 object-contain rounded-lg mb-2"
+                        />
+                        <div className="font-display text-dark-green-start text-center text-base mb-1">{product.title}</div>
+                        <div className="font-body text-orange-cream font-bold text-sm mb-1">${product.price.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {error && (
+                    <div className="text-red-500 text-center mb-4">{error}</div>
+                  )}
+                  <button
+                    className="btn-primary w-full text-lg flex items-center justify-center gap-2"
+                    disabled={selectedProducts.length === 0 || isLoading}
+                    onClick={handleSubscribe}
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className="animate-spin">⟳</span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Subscribe
+                        <span className="font-bold">${total.toFixed(2)}</span>
+                      </>
+                    )}
+                  </button>
+                </>
               )}
-              <button
-                className="btn-primary w-full text-lg flex items-center justify-center gap-2"
-                disabled={selectedProducts.length === 0}
-              >
-                Subscribe
-                <span className="font-bold">${total.toFixed(2)}</span>
-              </button>
             </div>
           </motion.div>
         )}

@@ -21,6 +21,7 @@ export async function fetchProducts(filters: object, limit: number = 3): Promise
       image_url: p.image_url || '',
       tier: p.tier || 'unspecified',
       category: p.category || 'uncategorized',
+      variant_id: p.variant_id,
     }));
   } catch (e) {
     return [];

@@ -6,6 +6,7 @@ export interface Product {
   image_url?: string;
   tier?: string;
   category?: string;
+  variant_id?: number;
   [key: string]: any;
 }
 
