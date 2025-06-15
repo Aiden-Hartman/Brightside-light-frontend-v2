@@ -21,47 +21,56 @@ function sortByTier(products: Product[]): Product[] {
   });
 }
 
+const ALLOWED_ORIGIN = "https://brightside-light-frontend-v2.vercel.app";
+
 const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, total, open, onToggle }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = () => {
     if (selectedProducts.length === 0) return;
-    
     setIsLoading(true);
     setError(null);
 
-    try {
-      // Prepare cart items with subscription plan
-      const items = selectedProducts.map(product => ({
+    // Build items array, filtering out invalid entries
+    const sellingPlanId = process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID;
+    const items = selectedProducts
+      .filter(product => product.variant_id && sellingPlanId)
+      .map(product => ({
         id: product.variant_id,
         quantity: 1,
-        selling_plan: process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID
+        selling_plan: sellingPlanId
       }));
 
-      // Add items to Shopify cart
-      const response = await fetch("/cart/add.js", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items })
-      });
+    if (items.length === 0) {
+      setError('No valid products to subscribe.');
+      setIsLoading(false);
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to add items to cart');
-      }
-
-      // Redirect to Shopify cart
+    // Send postMessage to parent window
+    try {
       if (window.top) {
-        window.top.location.href = "/cart";
+        window.top.postMessage({
+          type: "ADD_SUBSCRIPTION_TO_CART",
+          payload: { items }
+        }, ALLOWED_ORIGIN);
       } else {
-        window.location.href = "/cart";
+        setError('Unable to communicate with parent window.');
+        setIsLoading(false);
+        return;
       }
     } catch (err) {
-      console.error('Subscription checkout error:', err);
-      setError('Failed to process subscription. Please try again.');
-    } finally {
+      setError('Failed to send subscription request.');
       setIsLoading(false);
+      return;
     }
+
+    // Optimistically show loading, then re-enable after 2.5s if not redirected
+    setTimeout(() => {
+      setIsLoading(false);
+      setError('Something went wrong adding your bundle. Please try again.');
+    }, 2500);
   };
 
   return (
