@@ -32,8 +32,12 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     setIsLoading(true);
     setError(null);
 
-    // Build items array, filtering out invalid entries
+    // Debug logs
     const sellingPlanId = process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID;
+    console.log('[DEBUG] selectedProducts:', selectedProducts);
+    console.log('[DEBUG] sellingPlanId:', sellingPlanId);
+
+    // Build items array, filtering out invalid entries
     const items = selectedProducts
       .filter(product => product.variant_id && sellingPlanId)
       .map(product => ({
@@ -41,6 +45,7 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
         quantity: 1,
         selling_plan: sellingPlanId
       }));
+    console.log('[DEBUG] items to submit:', items);
 
     if (items.length === 0) {
       setError('No valid products to subscribe.');
