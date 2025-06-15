@@ -287,9 +287,9 @@ export default function HomePage() {
                   }
                 }}
               >
-                <div className="mb-6 text-white/90">
+                {/* <div className="mb-6 text-white/90">
                   Here are our top three options for {cat.label.toLowerCase()} products.
-                </div>
+                </div> */}
                 {categoryLoading[cat.key] ? (
                   <LoadingSpinner />
                 ) : categoryError[cat.key] ? (
