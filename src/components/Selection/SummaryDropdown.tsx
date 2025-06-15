@@ -32,10 +32,13 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     setIsLoading(true);
     setError(null);
 
-    // Debug logs
+    // Access the env variable inside the function
     const sellingPlanId = process.env.NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID;
     console.log('[DEBUG] selectedProducts:', selectedProducts);
     console.log('[DEBUG] sellingPlanId:', sellingPlanId);
+    if (!sellingPlanId) {
+      console.warn('[WARNING] NEXT_PUBLIC_SUBSCRIPTION_PLAN_ID is missing or undefined!');
+    }
 
     // Build items array, filtering out invalid entries
     const items = selectedProducts
@@ -53,13 +56,17 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
       return;
     }
 
+    // Prepare the message object
+    const message = {
+      type: "ADD_SUBSCRIPTION_TO_CART",
+      payload: { items }
+    };
+    console.log('[DEBUG] postMessage object:', message);
+
     // Send postMessage to parent window
     try {
       if (window.top) {
-        window.top.postMessage({
-          type: "ADD_SUBSCRIPTION_TO_CART",
-          payload: { items }
-        }, ALLOWED_ORIGIN);
+        window.top.postMessage(message, ALLOWED_ORIGIN);
       } else {
         setError('Unable to communicate with parent window.');
         setIsLoading(false);
