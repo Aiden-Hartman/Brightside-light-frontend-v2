@@ -36,16 +36,14 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     const sellingPlanId = process.env.REACT_APP_SUBSCRIPTION_PLAN_ID;
     const reactAppUrl = process.env.NEXT_PUBLIC_REACT_APP_URL;
 
-    console.debug('[DEBUG] selectedProducts:', selectedProducts);
-    console.debug('[DEBUG] sellingPlanId:', sellingPlanId);
-    console.debug('[DEBUG] reactAppUrl:', reactAppUrl);
+    console.debug('[DEBUG] Preparing to send subscription message...');
+    console.debug('[DEBUG] Selected products:', selectedProducts);
+    console.debug('[DEBUG] Selling plan ID:', sellingPlanId);
+    console.debug('[DEBUG] React app URL:', reactAppUrl);
 
     if (!selectedProducts || selectedProducts.length === 0) {
       console.warn('[WARNING] No selected products to submit!');
-    }
-
-    if (!reactAppUrl) {
-      console.warn('[WARNING] NEXT_PUBLIC_REACT_APP_URL is missing or undefined!');
+      return;
     }
 
     const items = selectedProducts.map((product) => ({
@@ -55,8 +53,8 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     }));
 
     const validItems = items.filter((item) => !!item.id);
-    console.debug('[DEBUG] items mapped from selectedProducts:', items);
-    console.debug('[DEBUG] validItems to submit:', validItems);
+    console.debug('[DEBUG] Mapped items:', items);
+    console.debug('[DEBUG] Valid items to submit:', validItems);
 
     const message = {
       type: 'ADD_SUBSCRIPTION_TO_CART',
@@ -65,25 +63,29 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
       },
     };
 
-    console.debug('[DEBUG] postMessage object:', message);
-    console.debug('[DEBUG] reached window.top block');
+    console.debug('[DEBUG] Final message object:', message);
+    console.debug('[DEBUG] window.top === window:', window.top === window);
+
     if (window.top) {
       console.debug('[DEBUG] window.top location:', window.top.location?.href);
       try {
         window.top.postMessage(message, '*');
-        console.debug('[DEBUG] postMessage sent successfully.');
+        console.debug('[DEBUG] Message sent successfully');
       } catch (err) {
-        console.error('[ERROR] Failed to send postMessage:', err);
+        console.error('[ERROR] Failed to send message:', err);
+        setError('Failed to add subscription to cart. Please try again.');
       }
     } else {
       console.warn('[WARNING] window.top is null or undefined!');
+      setError('Failed to add subscription to cart. Please try again.');
     }
-    console.debug('[DEBUG] after postMessage try/catch');
 
     // Optimistically show loading, then re-enable after 2.5s if not redirected
     setTimeout(() => {
       setIsLoading(false);
-      setError('Something went wrong adding your bundle. Please try again.');
+      if (!error) {
+        setError('Something went wrong adding your bundle. Please try again.');
+      }
     }, 2500);
   };
 
