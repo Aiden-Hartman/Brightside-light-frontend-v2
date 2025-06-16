@@ -66,7 +66,7 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     };
 
     console.debug('[DEBUG] postMessage object:', message);
-    console.debug('[DEBUG] window.top === window:', window.top === window);
+    console.debug('[DEBUG] reached window.top block');
     if (window.top) {
       console.debug('[DEBUG] window.top location:', window.top.location?.href);
       try {
@@ -78,6 +78,7 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     } else {
       console.warn('[WARNING] window.top is null or undefined!');
     }
+    console.debug('[DEBUG] after postMessage try/catch');
 
     // Optimistically show loading, then re-enable after 2.5s if not redirected
     setTimeout(() => {
