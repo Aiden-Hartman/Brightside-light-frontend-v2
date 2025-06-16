@@ -34,12 +34,10 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
 
     // Debugging and environment variables
     const sellingPlanId = process.env.REACT_APP_SUBSCRIPTION_PLAN_ID;
-    const reactAppUrl = process.env.NEXT_PUBLIC_REACT_APP_URL;
 
     console.debug('[DEBUG] Preparing to send subscription message...');
     console.debug('[DEBUG] Selected products:', selectedProducts);
     console.debug('[DEBUG] Selling plan ID:', sellingPlanId);
-    console.debug('[DEBUG] React app URL:', reactAppUrl);
 
     if (!selectedProducts || selectedProducts.length === 0) {
       console.warn('[WARNING] No selected products to submit!');
@@ -64,10 +62,9 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     };
 
     console.debug('[DEBUG] Final message object:', message);
-    console.debug('[DEBUG] window.top === window:', window.top === window);
+    console.debug('[DEBUG] Attempting to send message to parent window...');
 
     if (window.top) {
-      console.debug('[DEBUG] window.top location:', window.top.location?.href);
       try {
         window.top.postMessage(message, '*');
         console.debug('[DEBUG] Message sent successfully');
