@@ -32,52 +32,51 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
     setIsLoading(true);
     setError(null);
 
-    // Access and log the selling plan env variable
+    // Debugging and environment variables
     const sellingPlanId = process.env.REACT_APP_SUBSCRIPTION_PLAN_ID;
-    console.log('[DEBUG] selectedProducts:', selectedProducts);
-    console.log('[DEBUG] sellingPlanId:', sellingPlanId);
-    if (!sellingPlanId) {
-      console.warn('[WARNING] REACT_APP_SUBSCRIPTION_PLAN_ID is missing or undefined!');
+    const reactAppUrl = process.env.NEXT_PUBLIC_REACT_APP_URL;
+
+    console.debug('[DEBUG] selectedProducts:', selectedProducts);
+    console.debug('[DEBUG] sellingPlanId:', sellingPlanId);
+    console.debug('[DEBUG] reactAppUrl:', reactAppUrl);
+
+    if (!selectedProducts || selectedProducts.length === 0) {
+      console.warn('[WARNING] No selected products to submit!');
     }
 
-    // Build items array directly from selectedProducts
-    const items = selectedProducts.map(product => ({
+    if (!reactAppUrl) {
+      console.warn('[WARNING] NEXT_PUBLIC_REACT_APP_URL is missing or undefined!');
+    }
+
+    const items = selectedProducts.map((product) => ({
       id: product.variant_id,
       quantity: 1,
-      selling_plan: sellingPlanId
+      selling_plan: sellingPlanId,
     }));
-    console.log('[DEBUG] items mapped from selectedProducts:', items);
 
-    // Filter out any items with missing id or selling_plan
-    const validItems = items.filter(item => item.id && item.selling_plan);
-    console.log('[DEBUG] validItems to submit:', validItems);
+    const validItems = items.filter((item) => !!item.id);
+    console.debug('[DEBUG] items mapped from selectedProducts:', items);
+    console.debug('[DEBUG] validItems to submit:', validItems);
 
-    if (validItems.length === 0) {
-      setError('No valid products to subscribe.');
-      setIsLoading(false);
-      return;
-    }
-
-    // Prepare the message object
     const message = {
-      type: "ADD_SUBSCRIPTION_TO_CART",
-      payload: { items: validItems }
+      type: 'ADD_SUBSCRIPTION_TO_CART',
+      payload: {
+        items: validItems,
+      },
     };
-    console.log('[DEBUG] postMessage object:', message);
 
-    // Send postMessage to parent window
-    try {
-      if (window.top) {
-        window.top.postMessage(message, ALLOWED_ORIGIN);
-      } else {
-        setError('Unable to communicate with parent window.');
-        setIsLoading(false);
-        return;
+    console.debug('[DEBUG] postMessage object:', message);
+    console.debug('[DEBUG] window.top === window:', window.top === window);
+    if (window.top) {
+      console.debug('[DEBUG] window.top location:', window.top.location?.href);
+      try {
+        window.top.postMessage(message, '*');
+        console.debug('[DEBUG] postMessage sent successfully.');
+      } catch (err) {
+        console.error('[ERROR] Failed to send postMessage:', err);
       }
-    } catch (err) {
-      setError('Failed to send subscription request.');
-      setIsLoading(false);
-      return;
+    } else {
+      console.warn('[WARNING] window.top is null or undefined!');
     }
 
     // Optimistically show loading, then re-enable after 2.5s if not redirected
