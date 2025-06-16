@@ -18,8 +18,8 @@ module.exports = {
         'soft-purple': '#AE879B',
       },
       fontFamily: {
-        display: ['"Quiche Sans"', 'serif'],
-        body: ['"Acumin Pro"', 'sans-serif'],
+        display: ['"quiche-sans"', 'serif'],
+        body: ['"acumin-pro"', 'sans-serif'],
       },
       borderRadius: {
         '2xl': '1.5rem',
