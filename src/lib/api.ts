@@ -1,4 +1,4 @@
-import { Product, ChatContext, ChatMessage } from '../types';
+import { Product, ChatContext, ChatMessage, GPTClassifierResponse, GPTContext } from '../types';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'https://brightside-light-shopify-assistant.onrender.com/api/v1';
 
@@ -48,6 +48,59 @@ export async function askAboutProducts(message: string, context: ChatContext & {
     const data = await res.json();
     return data.reply as string;
   } catch (e) {
+    return '';
+  }
+}
+
+export async function fetchAllProducts(): Promise<Product[]> {
+  return fetchProducts({}, 15);
+}
+
+export async function classifyGPTMessage(message: string, products: Product[]): Promise<GPTClassifierResponse> {
+  try {
+    const body = {
+      message,
+      products: products.map(p => ({
+        title: p.title,
+        description: p.description
+      }))
+    };
+    const res = await fetch(`${API_BASE}/classify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('Failed to classify message');
+    const data = await res.json();
+    return data as GPTClassifierResponse;
+  } catch (e) {
+    console.error('Error classifying message:', e);
+    return { status: 'fallback', required_context: [] };
+  }
+}
+
+export async function respondToGPTMessage(message: string, context: GPTContext): Promise<string> {
+  try {
+    const body = {
+      message,
+      context: {
+        products: context.products.map(p => ({
+          title: p.title,
+          description: p.description
+        })),
+        chatMessages: context.chatMessages
+      }
+    };
+    const res = await fetch(`${API_BASE}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('Failed to get GPT response');
+    const data = await res.json();
+    return data.reply as string;
+  } catch (e) {
+    console.error('Error getting GPT response:', e);
     return '';
   }
 } 

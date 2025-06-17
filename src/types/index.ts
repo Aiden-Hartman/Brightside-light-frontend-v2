@@ -19,4 +19,14 @@ export interface ChatContext {
   products: Product[];
   summary: string;
   chatMessages: ChatMessage[];
+}
+
+export interface GPTClassifierResponse {
+  status: 'ok' | 'fallback';
+  required_context: string[];  // Product titles
+}
+
+export interface GPTContext {
+  products: Product[];
+  chatMessages: ChatMessage[];
 } 

@@ -13,8 +13,8 @@ import LoadingSpinner from '../components/UI/LoadingSpinner';
 import SummaryDropdown from '../components/Selection/SummaryDropdown';
 import { PRODUCT_CATEGORIES } from '../lib/constants';
 import { Product, ChatMessage } from '../types';
-import { fetchProducts, askAboutProducts } from '../lib/api';
-import { getCachedProducts, setCachedProducts } from '../lib/dataCache';
+import { fetchProducts, askAboutProducts, fetchAllProducts, classifyGPTMessage } from '../lib/api';
+import { getCachedProducts, setCachedProducts, getGPTAllProductsCache, setGPTAllProductsCache } from '../lib/dataCache';
 import { sendSpecialChatRequest } from '../lib/specialChatRequest';
 
 export default function HomePage() {
@@ -85,23 +85,51 @@ export default function HomePage() {
     setChatError(false);
     setChatInput('');
     const userMsg: ChatMessage = { role: 'user', content: message };
-    const newMessages = [...chatMessages, userMsg].slice(-5);
-    const context = customContext ?? {
-      products: Object.values(selectedProducts).flat(),
-      answers: [],
-      summary: '',
-      chatMessages: newMessages,
-    };
-    setLastChatRequest({ message, context });
     setChatMessages((prev) => [...prev, userMsg]);
-    const reply = await askAboutProducts(message, context);
-    if (!reply) {
+
+    try {
+      // Get all products (from cache or fetch)
+      let allProducts = getGPTAllProductsCache();
+      if (!allProducts) {
+        allProducts = await fetchAllProducts();
+        setGPTAllProductsCache(allProducts);
+      }
+
+      // Layer 1: Classify the message
+      const classification = await classifyGPTMessage(message, allProducts);
+
+      if (classification.status === 'fallback') {
+        // Handle fallback case
+        const fallbackContext = {
+          products: [],
+          answers: [],
+          summary: '',
+          chatMessages: [...chatMessages, userMsg].slice(-5)
+        };
+        const reply = await askAboutProducts(message, fallbackContext);
+        if (!reply) throw new Error('Failed to get fallback response');
+        setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      } else {
+        // Layer 2: Get response with filtered context
+        const requiredProducts = allProducts.filter(p => 
+          classification.required_context.includes(p.title)
+        );
+        const context = {
+          products: requiredProducts,
+          answers: [],
+          summary: '',
+          chatMessages: [...chatMessages, userMsg].slice(-5)
+        };
+        const reply = await askAboutProducts(message, context);
+        if (!reply) throw new Error('Failed to get GPT response');
+        setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      }
+    } catch (error) {
+      console.error('Error in chat:', error);
       setChatError(true);
+    } finally {
       setChatLoading(false);
-      return;
     }
-    setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
-    setChatLoading(false);
   };
 
   // Retry handler
