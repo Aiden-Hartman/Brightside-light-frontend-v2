@@ -1,55 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+const MOBILE_BREAKPOINT = 768;
+const LOCALSTORAGE_KEY = 'hideMobileWarning';
 
 const MobileWarning: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [hideBanner, setHideBanner] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      if (mobile) {
-        setIsVisible(true);
-      }
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  if (!isMobile) return null;
+  useEffect(() => {
+    const hidden = localStorage.getItem(LOCALSTORAGE_KEY) === 'true';
+    setHideBanner(hidden);
+  }, []);
+
+  const handleClose = () => {
+    setHideBanner(true);
+    localStorage.setItem(LOCALSTORAGE_KEY, 'true');
+  };
+
+  if (!isMobile || hideBanner) return null;
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="fixed top-0 left-0 right-0 z-50 bg-orange-cream text-white p-4 shadow-lg"
-        >
-          <div className="max-w-[900px] mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span role="img" aria-label="warning" className="text-xl">⚠️</span>
-              <p className="font-body">
-                This page is not optimized for mobile devices. For the best experience, please visit on a desktop computer.
-              </p>
-            </div>
-            <button
-              onClick={() => setIsVisible(false)}
-              className="text-white hover:text-gray-200 transition-colors"
-              aria-label="Close warning"
-            >
-              ✕
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 w-[95vw] max-w-xl z-50 bg-[#fdf6e3] text-[#527055] px-6 py-5 flex items-center justify-between shadow-lg rounded-2xl border border-[#eee]" style={{fontFamily: 'acumin-pro, sans-serif'}}>
+      <div className="flex items-center gap-4">
+        <span className="text-4xl" aria-label="Warning">⚠️</span>
+        <p className="text-lg font-body leading-snug">
+          This experience is not optimized for mobile. Please use a desktop for best results.
+        </p>
+      </div>
+      <button
+        onClick={handleClose}
+        className="ml-4 text-3xl font-bold text-[#527055] hover:text-[#678969] transition-colors focus:outline-none"
+        aria-label="Close warning"
+        style={{lineHeight: 1}}
+      >
+        ×
+      </button>
+    </div>
   );
 };
 
+export default MobileWarning; 
 export default MobileWarning; 
