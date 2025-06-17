@@ -47,4 +47,3 @@ const MobileWarning: React.FC = () => {
 };
 
 export default MobileWarning; 
-export default MobileWarning; 
