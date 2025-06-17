@@ -222,8 +222,11 @@ export default function HomePage() {
   return (
     <div className="relative min-h-screen w-full bg-[#FFFDF5] text-[#527055]">
       {/* Chat Sidebar */}
-      <div className="fixed left-0 top-0 w-[384px] h-screen z-30 flex items-center justify-center pointer-events-none">
-        <div className="w-full pointer-events-auto" style={{ height: '90vh', top: '5vh', position: 'fixed', left: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div
+        className="fixed left-0 z-30 w-[384px] pointer-events-none"
+        style={{ top: '5vh', height: '90vh' }}
+      >
+        <div className="w-full h-full pointer-events-auto">
           <ChatSidebar className="glass-panel rounded-r-3xl h-full">
             <ChatWindow>
               {chatMessages.length === 0 ? (
