@@ -38,7 +38,7 @@ export default function HomePage() {
   const GAP = 48;
   const GROUP_WIDTH = CHAT_WIDTH + GAP + MAIN_WIDTH;
   const groupLeft = `calc(50vw - ${GROUP_WIDTH / 2}px)`;
-  const mainTopMargin = '5vh'; // To match the chat's top margin
+  const mainTopMargin = '2.5vh'; // To match the chat's top margin
 
   // Fetch products when a panel is opened
   useEffect(() => {
