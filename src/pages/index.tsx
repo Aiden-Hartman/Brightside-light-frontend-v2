@@ -87,18 +87,32 @@ export default function HomePage() {
     const userMsg: ChatMessage = { role: 'user', content: message };
     setChatMessages((prev) => [...prev, userMsg]);
 
+    console.group('🤖 GPT Chat Flow');
+    console.log('📝 User Message:', message);
+
     try {
       // Get all products (from cache or fetch)
+      console.log('🔄 Checking product cache...');
       let allProducts = getGPTAllProductsCache();
       if (!allProducts) {
+        console.log('📦 Cache miss - fetching all products...');
         allProducts = await fetchAllProducts();
         setGPTAllProductsCache(allProducts);
+        console.log('✅ Fetched products:', allProducts.map(p => p.title).join(', '));
+      } else {
+        console.log('✅ Using cached products:', allProducts.map(p => p.title).join(', '));
       }
 
       // Layer 1: Classify the message
+      console.log('🔍 Layer 1: Classifying message...');
       const classification = await classifyGPTMessage(message, allProducts);
+      console.log('📊 Classification result:', {
+        status: classification.status,
+        requiredProducts: classification.required_context
+      });
 
       if (classification.status === 'fallback') {
+        console.log('⚠️ Fallback case detected - no relevant products found');
         // Handle fallback case
         const fallbackContext = {
           products: [],
@@ -106,29 +120,37 @@ export default function HomePage() {
           summary: '',
           chatMessages: [...chatMessages, userMsg].slice(-5)
         };
+        console.log('🔄 Layer 2: Sending fallback request to GPT...');
         const reply = await askAboutProducts(message, fallbackContext);
         if (!reply) throw new Error('Failed to get fallback response');
+        console.log('✅ Fallback response received:', reply);
         setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       } else {
         // Layer 2: Get response with filtered context
+        console.log('🔄 Layer 2: Filtering products for context...');
         const requiredProducts = allProducts.filter(p => 
           classification.required_context.includes(p.title)
         );
+        console.log('📦 Selected products for context:', requiredProducts.map(p => p.title).join(', '));
+        
         const context = {
           products: requiredProducts,
           answers: [],
           summary: '',
           chatMessages: [...chatMessages, userMsg].slice(-5)
         };
+        console.log('🔄 Layer 2: Sending request to GPT with filtered context...');
         const reply = await askAboutProducts(message, context);
         if (!reply) throw new Error('Failed to get GPT response');
+        console.log('✅ GPT response received:', reply);
         setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       }
     } catch (error) {
-      console.error('Error in chat:', error);
+      console.error('❌ Error in chat flow:', error);
       setChatError(true);
     } finally {
       setChatLoading(false);
+      console.groupEnd();
     }
   };
 

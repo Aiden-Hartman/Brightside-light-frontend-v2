@@ -29,6 +29,14 @@ export async function fetchProducts(filters: object, limit: number = 3): Promise
 }
 
 export async function askAboutProducts(message: string, context: ChatContext & { answers?: any[] }): Promise<string> {
+  console.group('💬 GPT Chat API Call');
+  console.log('📝 Message:', message);
+  console.log('📦 Context:', {
+    productCount: context.products.length,
+    productTitles: context.products.map((p: Product) => p.title).join(', '),
+    messageCount: context.chatMessages.length
+  });
+
   try {
     const body = {
       message,
@@ -44,11 +52,18 @@ export async function askAboutProducts(message: string, context: ChatContext & {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error('Failed to get chat reply');
+    if (!res.ok) {
+      console.error('❌ Chat API error:', res.status, res.statusText);
+      throw new Error('Failed to get chat response');
+    }
     const data = await res.json();
+    console.log('✅ Chat response:', data);
+    console.groupEnd();
     return data.reply as string;
   } catch (e) {
-    return '';
+    console.error('❌ Chat error:', e);
+    console.groupEnd();
+    throw e;
   }
 }
 
@@ -57,6 +72,10 @@ export async function fetchAllProducts(): Promise<Product[]> {
 }
 
 export async function classifyGPTMessage(message: string, products: Product[]): Promise<GPTClassifierResponse> {
+  console.group('🔍 GPT Classification API Call');
+  console.log('📝 Message:', message);
+  console.log('📦 Available products:', products.map(p => p.title).join(', '));
+
   try {
     const body = {
       message,
@@ -70,12 +89,18 @@ export async function classifyGPTMessage(message: string, products: Product[]): 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error('Failed to classify message');
+    if (!res.ok) {
+      console.error('❌ Classification API error:', res.status, res.statusText);
+      throw new Error('Failed to classify message');
+    }
     const data = await res.json();
+    console.log('✅ Classification response:', data);
+    console.groupEnd();
     return data as GPTClassifierResponse;
   } catch (e) {
-    console.error('Error classifying message:', e);
-    return { status: 'fallback', required_context: [] };
+    console.error('❌ Classification error:', e);
+    console.groupEnd();
+    throw e;
   }
 }
 
