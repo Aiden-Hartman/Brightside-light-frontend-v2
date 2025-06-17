@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '../../types';
+import { redirectParent } from '../../lib/redirectParent';
 
 interface SummaryDropdownProps {
   selectedProducts: Product[];
@@ -157,6 +158,20 @@ const SummaryDropdown: React.FC<SummaryDropdownProps> = ({ selectedProducts, tot
                   </button>
                 </>
               )}
+            </div>
+            {/* Add the catalog link at the bottom, always visible */}
+            <div className="w-full flex flex-col items-center mt-6 mb-2">
+              <span className="text-center text-dark-green-start/80 text-base">
+                Can't find what you're looking for?{' '}
+                <button
+                  type="button"
+                  className="inline underline font-medium px-2 py-1 rounded transition hover:bg-orange-cream/10 focus:outline-none focus:ring-2 focus:ring-orange-cream/30"
+                  style={{ textDecoration: 'underline', cursor: 'pointer', display: 'inline', background: 'none', border: 'none' }}
+                  onClick={() => redirectParent('https://www.brightsidesupplements.com/pages/bundle-builder')}
+                >
+                  Browse our full catalog here
+                </button>
+              </span>
             </div>
           </motion.div>
         )}
