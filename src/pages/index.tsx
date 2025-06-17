@@ -238,7 +238,7 @@ export default function HomePage() {
     if (prod) {
       setSelectedProducts(prev => {
         const currentSelections = prev[catKey] || [];
-        const isSelected = currentSelections.some(p => p.id === pid);
+        const isSelected = currentSelections.length === 1 && currentSelections[0].id === pid;
         // Shimmer logic: only trigger if not shown yet and first selection
         if (!nextShimmerShown[catKey] && !isSelected) {
           setNextShimmerShown(shown => ({ ...shown, [catKey]: true }));
@@ -253,16 +253,16 @@ export default function HomePage() {
           }
         }
         if (isSelected) {
-          // Remove product if already selected
+          // Deselect if already selected
           return {
             ...prev,
-            [catKey]: currentSelections.filter(p => p.id !== pid)
+            [catKey]: []
           };
         } else {
-          // Add product if not selected
+          // Select only the new product
           return {
             ...prev,
-            [catKey]: [...currentSelections, prod]
+            [catKey]: [prod]
           };
         }
       });
@@ -274,7 +274,7 @@ export default function HomePage() {
       {/* Chat Sidebar */}
       <div
         className="fixed left-0 z-30 w-[384px] pointer-events-none"
-        style={{ top: '2.5vh', height: '35vh' }}
+        style={{ top: '2rem', height: '35vh' }}
       >
         <div className="w-full h-full pointer-events-auto">
           <ChatSidebar className="glass-panel rounded-r-3xl h-full">

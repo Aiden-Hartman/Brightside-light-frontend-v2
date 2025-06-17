@@ -3,5 +3,5 @@ export const PRODUCT_CATEGORIES = [
   { key: 'immune-support', label: 'Immune Support' },
   { key: 'digestion', label: 'Digestion' },
   { key: 'heart-health', label: 'Heart Health' },
-  { key: 'brain-focus', label: 'Brain-Focus' },
+  { key: 'brain-focus', label: 'Brain Focus' },
 ]; 
