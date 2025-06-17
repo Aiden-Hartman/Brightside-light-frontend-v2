@@ -224,7 +224,7 @@ export default function HomePage() {
       {/* Chat Sidebar */}
       <div
         className="fixed left-0 z-30 w-[384px] pointer-events-none"
-        style={{ top: '2.5vh', height: '45vh' }}
+        style={{ top: '2.5vh', height: '35vh' }}
       >
         <div className="w-full h-full pointer-events-auto">
           <ChatSidebar className="glass-panel rounded-r-3xl h-full">
