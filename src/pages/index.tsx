@@ -11,11 +11,10 @@ import ProductRow from '../components/Selection/ProductRow';
 import SummaryPanel from '../components/Selection/SummaryPanel';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import SummaryDropdown from '../components/Selection/SummaryDropdown';
-import { PRODUCT_CATEGORIES } from '../lib/constants';
+import { PRODUCT_CATEGORIES, AI_PROMPTS } from '../lib/constants';
 import { Product, ChatMessage } from '../types';
-import { fetchProducts, askAboutProducts, fetchAllProducts, classifyGPTMessage } from '../lib/api';
+import { fetchProducts, askAboutProducts, fetchAllProducts, classifyGPTMessage, compareProductsWithAI, explainProductWithAI } from '../lib/api';
 import { getCachedProducts, setCachedProducts, getGPTAllProductsCache, setGPTAllProductsCache } from '../lib/dataCache';
-import { sendSpecialChatRequest } from '../lib/specialChatRequest';
 
 export default function HomePage() {
   const [openSection, setOpenSection] = useState<string | null>(PRODUCT_CATEGORIES[0].key);
@@ -163,20 +162,34 @@ export default function HomePage() {
 
   // Special handler for Explain with AI
   const handleExplainWithAI = async (product: Product) => {
-    const message = `explain ${product.title}`;
+    const message = `Explain ${product.title}`;
     setChatLoading(true);
     setChatError(false);
     const userMsg: ChatMessage = { role: 'user', content: message };
     setChatMessages((prev) => [...prev, userMsg]);
-    setLastChatRequest({ message, context: { products: [product], answers: [], summary: '', chatMessages: [...chatMessages, userMsg].slice(-5) } });
-    const reply = await sendSpecialChatRequest({ message, product, previousMessages: chatMessages });
-    if (!reply) {
+    
+    try {
+      console.group('🤖 AI Explanation Flow');
+      console.log('📝 User Message:', message);
+      console.log('📦 Product:', product.title);
+      
+      // Check cache first - use the product directly since we already have it
+      console.log('🔄 Using product from context:', product.title);
+      
+      // Bypass classification layer and directly call GPT with custom prompt
+      console.log('🔄 Sending request to GPT with custom prompt...');
+      const reply = await explainProductWithAI(product, chatMessages);
+      
+      if (!reply) throw new Error('Failed to get explanation response');
+      console.log('✅ Explanation response received:', reply);
+      setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+    } catch (error) {
+      console.error('❌ Error in explanation flow:', error);
       setChatError(true);
+    } finally {
       setChatLoading(false);
-      return;
+      console.groupEnd();
     }
-    setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
-    setChatLoading(false);
   };
 
   // Helper: scroll to open panel
@@ -224,12 +237,46 @@ export default function HomePage() {
   }, [pendingScrollKey]);
 
   // Handler: Compare with AI
-  const handleCompareWithAI = (catKey: string) => {
+  const handleCompareWithAI = async (catKey: string) => {
     const cat = PRODUCT_CATEGORIES.find(c => c.key === catKey);
-    const products = categoryProducts[catKey] || [];
     const message = `Compare the ${cat?.label || catKey} products`;
-    console.log(`[AI] Compare with AI clicked. Category:`, catKey, 'Products:', products, 'Message:', message);
-    handleSendChat(message, { products, answers: [], summary: '', chatMessages });
+    setChatLoading(true);
+    setChatError(false);
+    const userMsg: ChatMessage = { role: 'user', content: message };
+    setChatMessages((prev) => [...prev, userMsg]);
+    
+    try {
+      console.group('🤖 AI Comparison Flow');
+      console.log('📝 User Message:', message);
+      console.log('📦 Category:', catKey);
+      
+      // Check cache first
+      console.log('🔄 Checking product cache...');
+      let products = getCachedProducts(catKey);
+      if (!products || products.length === 0) {
+        console.log('📦 Cache miss - fetching products...');
+        products = await fetchProducts({ category: catKey }, 10); // Get more products to ensure we have all 3
+        if (products.length > 0) {
+          setCachedProducts(catKey, products);
+        }
+      }
+      
+      console.log('✅ Using products:', products.map(p => p.title).join(', '));
+      
+      // Bypass classification layer and directly call GPT with custom prompt
+      console.log('🔄 Sending request to GPT with custom prompt...');
+      const reply = await compareProductsWithAI(products, chatMessages);
+      
+      if (!reply) throw new Error('Failed to get comparison response');
+      console.log('✅ Comparison response received:', reply);
+      setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+    } catch (error) {
+      console.error('❌ Error in comparison flow:', error);
+      setChatError(true);
+    } finally {
+      setChatLoading(false);
+      console.groupEnd();
+    }
   };
 
   // Handler: Product select (add shimmer logic)

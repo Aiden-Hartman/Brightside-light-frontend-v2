@@ -1,4 +1,5 @@
 import { Product, ChatContext, ChatMessage, GPTClassifierResponse, GPTContext } from '../types';
+import { AI_PROMPTS } from './constants';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'https://brightside-light-shopify-assistant.onrender.com/api/v1';
 
@@ -127,5 +128,77 @@ export async function respondToGPTMessage(message: string, context: GPTContext):
   } catch (e) {
     console.error('Error getting GPT response:', e);
     return '';
+  }
+}
+
+// New function for AI comparison that bypasses classification
+export async function compareProductsWithAI(products: Product[], chatMessages: ChatMessage[]): Promise<string> {
+  console.group('🔍 AI Product Comparison');
+  console.log('📦 Products to compare:', products.map(p => p.title).join(', '));
+  console.log('💬 Chat messages:', chatMessages.length);
+
+  try {
+    const body = {
+      message: AI_PROMPTS.COMPARE,
+      context: {
+        products: products,
+        answers: [],
+        summary: '',
+        chatMessages: chatMessages.slice(-5),
+      },
+    };
+    const res = await fetch(`${API_BASE}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      console.error('❌ Comparison API error:', res.status, res.statusText);
+      throw new Error('Failed to get comparison response');
+    }
+    const data = await res.json();
+    console.log('✅ Comparison response received');
+    console.groupEnd();
+    return data.reply as string;
+  } catch (e) {
+    console.error('❌ Comparison error:', e);
+    console.groupEnd();
+    throw e;
+  }
+}
+
+// New function for AI explanation that bypasses classification
+export async function explainProductWithAI(product: Product, chatMessages: ChatMessage[]): Promise<string> {
+  console.group('🔍 AI Product Explanation');
+  console.log('📦 Product to explain:', product.title);
+  console.log('💬 Chat messages:', chatMessages.length);
+
+  try {
+    const body = {
+      message: AI_PROMPTS.EXPLAIN,
+      context: {
+        products: [product],
+        answers: [],
+        summary: '',
+        chatMessages: chatMessages.slice(-5),
+      },
+    };
+    const res = await fetch(`${API_BASE}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      console.error('❌ Explanation API error:', res.status, res.statusText);
+      throw new Error('Failed to get explanation response');
+    }
+    const data = await res.json();
+    console.log('✅ Explanation response received');
+    console.groupEnd();
+    return data.reply as string;
+  } catch (e) {
+    console.error('❌ Explanation error:', e);
+    console.groupEnd();
+    throw e;
   }
 } 
