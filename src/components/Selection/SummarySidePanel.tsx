@@ -130,7 +130,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
     <>
       {/* Sticky Tab - Always visible */}
       <motion.button
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white px-4 py-3 rounded-l-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:flex hidden"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white py-4 px-2 rounded-l-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:flex hidden flex-col items-center justify-center w-14 min-h-[120px]"
         onClick={onToggle}
         whileHover={{ x: -2 }}
         whileTap={{ scale: 0.95 }}
@@ -138,15 +138,18 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
         animate={{ x: isOpen ? -400 : 0 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-sm font-display">Summary</span>
-          {selectedCount > 0 && (
-            <span className="bg-orange-cream text-dark-green-start text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
-              {selectedCount}
-            </span>
-          )}
-          <span className="text-lg">▾</span>
-        </div>
+        <span
+          className="text-sm font-display mb-2"
+          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '0.1em' }}
+        >
+          Summary
+        </span>
+        {selectedCount > 0 && (
+          <span className="bg-orange-cream text-dark-green-start text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center mb-2">
+            {selectedCount}
+          </span>
+        )}
+        <span className="text-lg">▾</span>
       </motion.button>
 
       {/* Mobile Sticky Tab */}
@@ -185,7 +188,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
             
             {/* Desktop Panel */}
             <motion.div
-              className="fixed right-0 top-0 h-full w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col"
+              className="fixed right-0 top-0 h-full w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col rounded-l-2xl border border-dark-green-start/30"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -284,7 +287,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
 
             {/* Mobile Panel */}
             <motion.div
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 md:hidden flex flex-col max-h-[80vh]"
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 md:hidden flex flex-col max-h-[80vh] border border-dark-green-start/30"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
