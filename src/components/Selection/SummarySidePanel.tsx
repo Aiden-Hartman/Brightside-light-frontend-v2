@@ -130,7 +130,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
     <>
       {/* Sticky Tab - Always visible */}
       <motion.button
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white py-4 px-2 rounded-l-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:flex hidden flex-col items-center justify-center w-14 min-h-[120px]"
+        className="fixed right-0 top-[20vh] -translate-y-1/2 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white py-4 px-2 rounded-l-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:flex hidden flex-col items-center justify-center w-14 min-h-[120px]"
         onClick={onToggle}
         whileHover={{ x: -2 }}
         whileTap={{ scale: 0.95 }}
