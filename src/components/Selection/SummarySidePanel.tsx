@@ -149,7 +149,12 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
             {selectedCount}
           </span>
         )}
-        <span className="text-lg">▾</span>
+        <span
+          className="text-lg"
+          style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
+        >
+          ▾
+        </span>
       </motion.button>
 
       {/* Mobile Sticky Tab */}
@@ -169,7 +174,12 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
               {selectedCount}
             </span>
           )}
-          <span className="text-lg">▾</span>
+          <span
+            className="text-lg"
+            style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
+          >
+            ▾
+          </span>
         </div>
       </motion.button>
 
@@ -188,7 +198,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
             
             {/* Desktop Panel */}
             <motion.div
-              className="fixed right-0 top-0 h-full w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col rounded-l-2xl border border-dark-green-start/30"
+              className="fixed right-0 top-0 h-[40vh] w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col rounded-l-2xl border border-dark-green-start/30"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
