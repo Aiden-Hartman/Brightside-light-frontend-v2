@@ -80,6 +80,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, selected, onSelect, 
       role="button"
       aria-pressed={selected}
       aria-label={`${product.title} - ${product.price.toFixed(2)}`}
+      data-product-id={product.id}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onMouseEnter={handleMouseEnter}

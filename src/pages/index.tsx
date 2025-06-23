@@ -10,11 +10,12 @@ import CategoryPanel from '../components/Selection/CategoryPanel';
 import ProductRow from '../components/Selection/ProductRow';
 import SummaryPanel from '../components/Selection/SummaryPanel';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
-import SummaryDropdown from '../components/Selection/SummaryDropdown';
+import SummarySidePanel from '../components/Selection/SummarySidePanel';
 import { PRODUCT_CATEGORIES, AI_PROMPTS } from '../lib/constants';
 import { Product, ChatMessage } from '../types';
 import { fetchProducts, askAboutProducts, fetchAllProducts, classifyGPTMessage, compareProductsWithAI, explainProductWithAI } from '../lib/api';
 import { getCachedProducts, setCachedProducts, getGPTAllProductsCache, setGPTAllProductsCache } from '../lib/dataCache';
+import { animateProductImage } from '../lib/animateProductImage';
 
 export default function HomePage() {
   const [openSection, setOpenSection] = useState<string | null>(PRODUCT_CATEGORIES[0].key);
@@ -30,6 +31,10 @@ export default function HomePage() {
   const [nextShimmerShown, setNextShimmerShown] = useState<Record<string, boolean>>({});
   const buttonRefs = React.useRef<Record<string, HTMLButtonElement | null>>({});
   const [pendingScrollKey, setPendingScrollKey] = useState<string | null>(null);
+  
+  // New state for side panel
+  const [showSummaryPanel, setShowSummaryPanel] = useState(false);
+  const [lastSelectedProduct, setLastSelectedProduct] = useState<Product | null>(null);
 
   // Layout constants for perfect alignment
   const CHAT_WIDTH = 384;
@@ -212,11 +217,8 @@ export default function HomePage() {
     if (idx === -1) return;
     if (direction === 'next') {
       if (idx === PRODUCT_CATEGORIES.length - 1) {
-        setOpenSection('summary');
-        setTimeout(() => {
-          const el = document.querySelector(`[data-summary-panel]`);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 200);
+        // Open the side panel instead of the summary dropdown
+        setShowSummaryPanel(true);
         return;
       }
       const newKey = PRODUCT_CATEGORIES[idx + 1].key;
@@ -286,19 +288,7 @@ export default function HomePage() {
       setSelectedProducts(prev => {
         const currentSelections = prev[catKey] || [];
         const isSelected = currentSelections.length === 1 && currentSelections[0].id === pid;
-        // Shimmer logic: only trigger if not shown yet and first selection
-        if (!nextShimmerShown[catKey] && !isSelected) {
-          setNextShimmerShown(shown => ({ ...shown, [catKey]: true }));
-          // Add shimmer class
-          const btn = buttonRefs.current[catKey];
-          if (btn) {
-            btn.classList.remove('btn-next-shimmer');
-            // Force reflow to restart animation
-            void btn.offsetWidth;
-            btn.classList.add('btn-next-shimmer');
-            setTimeout(() => btn.classList.remove('btn-next-shimmer'), 1300);
-          }
-        }
+        
         if (isSelected) {
           // Deselect if already selected
           return {
@@ -307,6 +297,42 @@ export default function HomePage() {
           };
         } else {
           // Select only the new product
+          setLastSelectedProduct(prod);
+          setShowSummaryPanel(true);
+          
+          // Trigger animation after a short delay to ensure DOM is updated
+          setTimeout(() => {
+            const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
+            const summaryPanel = document.querySelector('[data-summary-panel]');
+            if (sourceCard && summaryPanel) {
+              // Find the specific product image in the summary panel
+              const targetProductCard = summaryPanel.querySelector(`[data-product-id="${pid}"]`);
+              if (targetProductCard) {
+                animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
+              } else {
+                // Fallback to the first image in the summary panel
+                const firstProductCard = summaryPanel.querySelector('.glass-panel');
+                if (firstProductCard) {
+                  animateProductImage(sourceCard as HTMLElement, firstProductCard as HTMLElement);
+                }
+              }
+            }
+          }, 400); // Increased delay to wait for panel animation
+          
+          // Shimmer logic: only trigger if not shown yet and first selection
+          if (!nextShimmerShown[catKey]) {
+            setNextShimmerShown(shown => ({ ...shown, [catKey]: true }));
+            // Add shimmer class
+            const btn = buttonRefs.current[catKey];
+            if (btn) {
+              btn.classList.remove('btn-next-shimmer');
+              // Force reflow to restart animation
+              void btn.offsetWidth;
+              btn.classList.add('btn-next-shimmer');
+              setTimeout(() => btn.classList.remove('btn-next-shimmer'), 1300);
+            }
+          }
+          
           return {
             ...prev,
             [catKey]: [prod]
@@ -441,13 +467,13 @@ export default function HomePage() {
                 )}
               </CategoryPanel>
             ))}
-            {/* Summary Dropdown at the end */}
-            <SummaryDropdown
+            {/* Summary Side Panel */}
+            <SummarySidePanel
               selectedProducts={Object.values(selectedProducts).flat()}
               total={Object.values(selectedProducts).flat().reduce((sum, p) => sum + (p.price || 0), 0)}
-              open={openSection === 'summary'}
-              onToggle={() => setOpenSection(openSection === 'summary' ? null : 'summary')}
-              data-summary-panel
+              isOpen={showSummaryPanel}
+              onToggle={() => setShowSummaryPanel(!showSummaryPanel)}
+              onClose={() => setShowSummaryPanel(false)}
             />
           </div>
         </main>
