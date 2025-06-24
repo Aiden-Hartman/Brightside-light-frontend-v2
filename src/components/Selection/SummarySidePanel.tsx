@@ -75,20 +75,31 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
     };
   }, [isOpen, isHovering, onClose]);
 
+  React.useEffect(() => {
+    console.log('[DEBUG] selectedProducts:', selectedProducts.map(p => p.id));
+    console.log('[DEBUG] isOpen:', isOpen);
+  }, [selectedProducts, isOpen]);
+
   // Detect when a new product is added
   useEffect(() => {
     if (!isOpen || selectedProducts.length === 0) return;
-    // Find the most recently added product (assume last in array is newest)
     const lastProduct = selectedProducts[selectedProducts.length - 1];
+    console.log('[DEBUG] Checking for new product. lastProduct:', lastProduct?.id, 'justAddedId:', justAddedId);
     if (lastProduct && lastProduct.id !== justAddedId) {
       setJustAddedId(lastProduct.id);
       setShowInfo(false);
       if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
       animationTimeoutRef.current = setTimeout(() => {
         setShowInfo(true);
-      }, IMAGE_ANIMATION_DURATION); // Wait for image animation
+        console.log('[DEBUG] setShowInfo(true) for product:', lastProduct.id);
+      }, IMAGE_ANIMATION_DURATION);
+      console.log('[DEBUG] New product detected. Setting justAddedId:', lastProduct.id, 'and showInfo: false');
     }
   }, [selectedProducts, isOpen]);
+
+  useEffect(() => {
+    console.log('[DEBUG] showInfo changed:', showInfo, 'justAddedId:', justAddedId);
+  }, [showInfo, justAddedId]);
 
   // Clear timeout on unmount
   useEffect(() => {
@@ -240,6 +251,11 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                       <div className="space-y-4 mb-6">
                         {sortByTier(selectedProducts).map((product) => {
                           const isJustAdded = product.id === justAddedId;
+                          console.log('[DEBUG] Rendering product card:', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
+                          if (isJustAdded && !showInfo) {
+                            console.log('[DEBUG] Rendering placeholder for', product.id);
+                            return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
+                          }
                           return (
                             <motion.div
                               key={product.id}
@@ -251,33 +267,32 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                               data-product-id={product.id}
                             >
                               <AnimatePresence mode="wait" initial={false}>
-                                {(!isJustAdded || showInfo) ? (
-                                  <motion.div
-                                    key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
-                                    className="flex items-center w-full"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    style={{ width: '100%' }}
-                                  >
-                                    <img 
-                                      src={product.image_url || '/placeholder.png'} 
-                                      alt={product.title} 
-                                      className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                        {product.title}
-                                      </div>
-                                      <div className="font-body text-orange-cream font-bold text-sm">
-                                        ${product.price.toFixed(2)}
-                                      </div>
+                                <motion.div
+                                  key={`fadein-${product.id}`}
+                                  className="flex items-center w-full"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  style={{ width: '100%' }}
+                                  onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
+                                  onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
+                                >
+                                  <img 
+                                    src={product.image_url || '/placeholder.png'} 
+                                    alt={product.title} 
+                                    className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                    onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                      {product.title}
                                     </div>
-                                  </motion.div>
-                                ) : (
-                                  <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />
-                                )}
+                                    <div className="font-body text-orange-cream font-bold text-sm">
+                                      ${product.price.toFixed(2)}
+                                    </div>
+                                  </div>
+                                </motion.div>
                               </AnimatePresence>
                             </motion.div>
                           );
@@ -365,6 +380,11 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                     <div className="space-y-4 mb-6">
                       {sortByTier(selectedProducts).map((product) => {
                         const isJustAdded = product.id === justAddedId;
+                        console.log('[DEBUG] Rendering product card:', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
+                        if (isJustAdded && !showInfo) {
+                          console.log('[DEBUG] Rendering placeholder for', product.id);
+                          return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
+                        }
                         return (
                           <motion.div
                             key={product.id}
@@ -376,33 +396,32 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                             data-product-id={product.id}
                           >
                             <AnimatePresence mode="wait" initial={false}>
-                              {(!isJustAdded || showInfo) ? (
-                                <motion.div
-                                  key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
-                                  className="flex items-center w-full"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  transition={{ duration: 0.3 }}
-                                  style={{ width: '100%' }}
-                                >
-                                  <img 
-                                    src={product.image_url || '/placeholder.png'} 
-                                    alt={product.title} 
-                                    className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                      {product.title}
-                                    </div>
-                                    <div className="font-body text-orange-cream font-bold text-sm">
-                                      ${product.price.toFixed(2)}
-                                    </div>
+                              <motion.div
+                                key={`fadein-${product.id}`}
+                                className="flex items-center w-full"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                style={{ width: '100%' }}
+                                onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
+                                onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
+                              >
+                                <img 
+                                  src={product.image_url || '/placeholder.png'} 
+                                  alt={product.title} 
+                                  className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                  onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                    {product.title}
                                   </div>
-                                </motion.div>
-                              ) : (
-                                <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />
-                              )}
+                                  <div className="font-body text-orange-cream font-bold text-sm">
+                                    ${product.price.toFixed(2)}
+                                  </div>
+                                </div>
+                              </motion.div>
                             </AnimatePresence>
                           </motion.div>
                         );
