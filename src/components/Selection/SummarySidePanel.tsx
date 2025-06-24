@@ -48,7 +48,19 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       // Set new timeout
       autoCloseTimeoutRef.current = setTimeout(() => {
         onClose();
-      }, 2000);
+      }, 1000);
+    } else if (isOpen && isHovering) {
+      // Clear timeout when hovering to pause the countdown
+      if (autoCloseTimeoutRef.current) {
+        clearTimeout(autoCloseTimeoutRef.current);
+        autoCloseTimeoutRef.current = null;
+      }
+    } else if (!isOpen) {
+      // Clear timeout when panel is closed
+      if (autoCloseTimeoutRef.current) {
+        clearTimeout(autoCloseTimeoutRef.current);
+        autoCloseTimeoutRef.current = null;
+      }
     }
 
     return () => {
@@ -180,7 +192,10 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
               exit={{ x: '100%' }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
+              onMouseLeave={() => {
+                setIsHovering(false);
+                onClose();
+              }}
               data-summary-panel
             >
               <div className="flex-1 overflow-y-auto">
@@ -279,7 +294,10 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
               exit={{ y: '100%' }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
+              onMouseLeave={() => {
+                setIsHovering(false);
+                onClose();
+              }}
               data-summary-panel
             >
               {/* Handle */}
