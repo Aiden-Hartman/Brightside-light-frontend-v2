@@ -35,7 +35,6 @@ export default function HomePage() {
   // New state for side panel
   const [showSummaryPanel, setShowSummaryPanel] = useState(false);
   const [lastSelectedProduct, setLastSelectedProduct] = useState<Product | null>(null);
-  const [animatingProductId, setAnimatingProductId] = useState<string | null>(null);
 
   // Layout constants for perfect alignment
   const CHAT_WIDTH = 384;
@@ -286,60 +285,58 @@ export default function HomePage() {
   const handleProductSelect = (catKey: string, pid: string) => {
     const prod = categoryProducts[catKey].find(p => p.id === pid);
     if (prod) {
-      console.log('[DEBUG] handleProductSelect: Product selected', { catKey, pid, prod });
       setSelectedProducts(prev => {
         const currentSelections = prev[catKey] || [];
         const isSelected = currentSelections.length === 1 && currentSelections[0].id === pid;
+        
         if (isSelected) {
-          console.log('[DEBUG] handleProductSelect: Deselecting product', { catKey, pid });
+          // Deselect if already selected
           return {
             ...prev,
             [catKey]: []
           };
         } else {
+          // Select only the new product
           setLastSelectedProduct(prod);
           setShowSummaryPanel(true);
-          setAnimatingProductId(pid); // Set animating product
-          console.log('[DEBUG] handleProductSelect: Set animatingProductId', pid);
+          
+          // Trigger animation after a short delay to ensure DOM is updated
           setTimeout(() => {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
             const summaryPanel = document.querySelector('[data-summary-panel]');
             if (sourceCard && summaryPanel) {
+              // Find the specific product image in the summary panel
               const targetProductCard = summaryPanel.querySelector(`[data-product-id="${pid}"]`);
-              const onComplete = () => {
-                console.log('[DEBUG] handleProductSelect: Animation complete, dispatching event', pid);
-                window.dispatchEvent(new CustomEvent('summary-image-animation-done', { detail: { productId: pid } }));
-              };
               if (targetProductCard) {
-                console.log('[DEBUG] handleProductSelect: Triggering animateProductImage', { sourceCard, targetProductCard });
-                animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement, onComplete);
+                animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
               } else {
+                // Fallback to the first image in the summary panel
                 const firstProductCard = summaryPanel.querySelector('.glass-panel');
                 if (firstProductCard) {
-                  console.log('[DEBUG] handleProductSelect: Triggering animateProductImage (fallback)', { sourceCard, firstProductCard });
-                  animateProductImage(sourceCard as HTMLElement, firstProductCard as HTMLElement, onComplete);
+                  animateProductImage(sourceCard as HTMLElement, firstProductCard as HTMLElement);
                 }
               }
-            } else {
-              console.log('[DEBUG] handleProductSelect: Source or summaryPanel not found', { sourceCard, summaryPanel });
             }
-          }, 400);
+          }, 400); // Increased delay to wait for panel animation
+          
+          // Shimmer logic: only trigger if not shown yet and first selection
           if (!nextShimmerShown[catKey]) {
             setNextShimmerShown(shown => ({ ...shown, [catKey]: true }));
+            // Add shimmer class
             const btn = buttonRefs.current[catKey];
             if (btn) {
               btn.classList.remove('btn-next-shimmer');
+              // Force reflow to restart animation
               void btn.offsetWidth;
               btn.classList.add('btn-next-shimmer');
               setTimeout(() => btn.classList.remove('btn-next-shimmer'), 1300);
             }
           }
-          const newState = {
+          
+          return {
             ...prev,
             [catKey]: [prod]
           };
-          console.log('[DEBUG] handleProductSelect: Updated selectedProducts', newState);
-          return newState;
         }
       });
     }
@@ -477,7 +474,6 @@ export default function HomePage() {
               isOpen={showSummaryPanel}
               onToggle={() => setShowSummaryPanel(!showSummaryPanel)}
               onClose={() => setShowSummaryPanel(false)}
-              animatingProductId={animatingProductId}
             />
           </div>
         </main>
