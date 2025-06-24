@@ -25,6 +25,8 @@ function sortByTier(products: Product[]): Product[] {
 
 const ALLOWED_ORIGIN = "https://brightside-light-frontend-v2.vercel.app";
 
+const IMAGE_ANIMATION_DURATION = 400; // ms, matches Framer Motion duration
+
 const SummarySidePanel: React.FC<SummarySidePanelProps> = ({ 
   selectedProducts, 
   total, 
@@ -36,6 +38,9 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isHovering, setIsHovering] = useState(false);
   const autoCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-close logic
   useEffect(() => {
@@ -48,7 +53,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       // Set new timeout
       autoCloseTimeoutRef.current = setTimeout(() => {
         onClose();
-      }, 1000);
+      }, 1500);
     } else if (isOpen && isHovering) {
       // Clear timeout when hovering to pause the countdown
       if (autoCloseTimeoutRef.current) {
@@ -70,12 +75,28 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
     };
   }, [isOpen, isHovering, onClose]);
 
+  // Detect when a new product is added
+  useEffect(() => {
+    if (!isOpen || selectedProducts.length === 0) return;
+    // Find the most recently added product (assume last in array is newest)
+    const lastProduct = selectedProducts[selectedProducts.length - 1];
+    if (lastProduct && lastProduct.id !== justAddedId) {
+      setJustAddedId(lastProduct.id);
+      setShowInfo(false);
+      if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = setTimeout(() => {
+        setShowInfo(true);
+      }, IMAGE_ANIMATION_DURATION); // Wait for image animation
+    }
+  }, [selectedProducts, isOpen]);
+
   // Clear timeout on unmount
   useEffect(() => {
     return () => {
       if (autoCloseTimeoutRef.current) {
         clearTimeout(autoCloseTimeoutRef.current);
       }
+      if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
     };
   }, []);
 
@@ -217,31 +238,42 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                   ) : (
                     <>
                       <div className="space-y-4 mb-6">
-                        {sortByTier(selectedProducts).map((product) => (
-                          <motion.div
-                            key={product.id}
-                            className="flex items-center gap-4 glass-panel rounded-xl p-4"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                            data-product-id={product.id}
-                          >
-                            <img 
-                              src={product.image_url || '/placeholder.png'} 
-                              alt={product.title} 
-                              className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                {product.title}
+                        {sortByTier(selectedProducts).map((product) => {
+                          const isJustAdded = product.id === justAddedId;
+                          return (
+                            <motion.div
+                              key={product.id}
+                              className="flex items-center gap-4 glass-panel rounded-xl p-4"
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -20 }}
+                              transition={{ duration: 0.3 }}
+                              data-product-id={product.id}
+                            >
+                              <img 
+                                src={product.image_url || '/placeholder.png'} 
+                                alt={product.title} 
+                                className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                              />
+                              <div className="flex-1 min-w-0">
+                                {/* Only show info if not just added, or if just added and showInfo is true */}
+                                {(!isJustAdded || showInfo) ? (
+                                  <>
+                                    <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                      {product.title}
+                                    </div>
+                                    <div className="font-body text-orange-cream font-bold text-sm">
+                                      ${product.price.toFixed(2)}
+                                    </div>
+                                  </>
+                                ) : (
+                                  // Empty space to preserve layout
+                                  <div style={{ height: '2.5rem' }} />
+                                )}
                               </div>
-                              <div className="font-body text-orange-cream font-bold text-sm">
-                                ${product.price.toFixed(2)}
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
+                            </motion.div>
+                          );
+                        })}
                       </div>
 
                       {error && (
@@ -323,31 +355,42 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                 ) : (
                   <>
                     <div className="space-y-4 mb-6">
-                      {sortByTier(selectedProducts).map((product) => (
-                        <motion.div
-                          key={product.id}
-                          className="flex items-center gap-4 glass-panel rounded-xl p-4"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          transition={{ duration: 0.3 }}
-                          data-product-id={product.id}
-                        >
-                          <img 
-                            src={product.image_url || '/placeholder.png'} 
-                            alt={product.title} 
-                            className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                              {product.title}
+                      {sortByTier(selectedProducts).map((product) => {
+                        const isJustAdded = product.id === justAddedId;
+                        return (
+                          <motion.div
+                            key={product.id}
+                            className="flex items-center gap-4 glass-panel rounded-xl p-4"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            data-product-id={product.id}
+                          >
+                            <img 
+                              src={product.image_url || '/placeholder.png'} 
+                              alt={product.title} 
+                              className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              {/* Only show info if not just added, or if just added and showInfo is true */}
+                              {(!isJustAdded || showInfo) ? (
+                                <>
+                                  <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                    {product.title}
+                                  </div>
+                                  <div className="font-body text-orange-cream font-bold text-sm">
+                                    ${product.price.toFixed(2)}
+                                  </div>
+                                </>
+                              ) : (
+                                // Empty space to preserve layout
+                                <div style={{ height: '2.5rem' }} />
+                              )}
                             </div>
-                            <div className="font-body text-orange-cream font-bold text-sm">
-                              ${product.price.toFixed(2)}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        );
+                      })}
                     </div>
 
                     {error && (
