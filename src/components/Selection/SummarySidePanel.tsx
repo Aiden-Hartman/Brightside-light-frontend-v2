@@ -250,27 +250,33 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                               transition={{ duration: 0.3 }}
                               data-product-id={product.id}
                             >
-                              <img 
-                                src={product.image_url || '/placeholder.png'} 
-                                alt={product.title} 
-                                className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                              />
-                              <div className="flex-1 min-w-0">
-                                {/* Only show info if not just added, or if just added and showInfo is true */}
-                                {(!isJustAdded || showInfo) ? (
-                                  <>
+                              {/* Only show image and info if not just added, or if just added and showInfo is true */}
+                              {(!isJustAdded || showInfo) ? (
+                                <motion.div
+                                  className="flex items-center w-full"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  transition={{ duration: 0.3 }}
+                                  style={{ width: '100%' }}
+                                >
+                                  <img 
+                                    src={product.image_url || '/placeholder.png'} 
+                                    alt={product.title} 
+                                    className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                  />
+                                  <div className="flex-1 min-w-0">
                                     <div className="font-display text-dark-green-start text-base mb-1 truncate">
                                       {product.title}
                                     </div>
                                     <div className="font-body text-orange-cream font-bold text-sm">
                                       ${product.price.toFixed(2)}
                                     </div>
-                                  </>
-                                ) : (
-                                  // Empty space to preserve layout
-                                  <div style={{ height: '2.5rem' }} />
-                                )}
-                              </div>
+                                  </div>
+                                </motion.div>
+                              ) : (
+                                // Optionally, empty space to preserve layout
+                                <div style={{ height: '4rem' }} />
+                              )}
                             </motion.div>
                           );
                         })}
@@ -367,27 +373,33 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                             transition={{ duration: 0.3 }}
                             data-product-id={product.id}
                           >
-                            <img 
-                              src={product.image_url || '/placeholder.png'} 
-                              alt={product.title} 
-                              className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              {/* Only show info if not just added, or if just added and showInfo is true */}
-                              {(!isJustAdded || showInfo) ? (
-                                <>
+                            {/* Only show image and info if not just added, or if just added and showInfo is true */}
+                            {(!isJustAdded || showInfo) ? (
+                              <motion.div
+                                className="flex items-center w-full"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.3 }}
+                                style={{ width: '100%' }}
+                              >
+                                <img 
+                                  src={product.image_url || '/placeholder.png'} 
+                                  alt={product.title} 
+                                  className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                />
+                                <div className="flex-1 min-w-0">
                                   <div className="font-display text-dark-green-start text-base mb-1 truncate">
                                     {product.title}
                                   </div>
                                   <div className="font-body text-orange-cream font-bold text-sm">
                                     ${product.price.toFixed(2)}
                                   </div>
-                                </>
-                              ) : (
-                                // Empty space to preserve layout
-                                <div style={{ height: '2.5rem' }} />
-                              )}
-                            </div>
+                                </div>
+                              </motion.div>
+                            ) : (
+                              // Optionally, empty space to preserve layout
+                              <div style={{ height: '4rem' }} />
+                            )}
                           </motion.div>
                         );
                       })}
