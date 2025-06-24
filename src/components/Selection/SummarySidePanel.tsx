@@ -257,15 +257,6 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                             return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
                           }
                           console.log('[DEBUG] Returning animated card for', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
-                          const DebugFadeIn: React.FC<{ children: ReactNode }> = ({ children }) => {
-                            React.useEffect(() => {
-                              console.log('[DEBUG] DebugFadeIn MOUNT for', product.id);
-                              return () => {
-                                console.log('[DEBUG] DebugFadeIn UNMOUNT for', product.id);
-                              };
-                            }, []);
-                            return <>{children}</>;
-                          };
                           return (
                             <motion.div
                               key={product.id}
@@ -275,37 +266,23 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                               exit={{ opacity: 0, x: -20 }}
                               transition={{ duration: 0.3 }}
                               data-product-id={product.id}
+                              onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
+                              onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
                             >
-                              <AnimatePresence mode="wait" initial={false}>
-                                <DebugFadeIn>
-                                  <motion.div
-                                    key={`fadein-${product.id}`}
-                                    className="flex items-center w-full"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    style={{ width: '100%' }}
-                                    onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
-                                    onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
-                                  >
-                                    <img 
-                                      src={product.image_url || '/placeholder.png'} 
-                                      alt={product.title} 
-                                      className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                      onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                        {product.title}
-                                      </div>
-                                      <div className="font-body text-orange-cream font-bold text-sm">
-                                        ${product.price.toFixed(2)}
-                                      </div>
-                                    </div>
-                                  </motion.div>
-                                </DebugFadeIn>
-                              </AnimatePresence>
+                              <img 
+                                src={product.image_url || '/placeholder.png'} 
+                                alt={product.title} 
+                                className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                  {product.title}
+                                </div>
+                                <div className="font-body text-orange-cream font-bold text-sm">
+                                  ${product.price.toFixed(2)}
+                                </div>
+                              </div>
                             </motion.div>
                           );
                         })}
@@ -398,15 +375,6 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                           return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
                         }
                         console.log('[DEBUG] Returning animated card for', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
-                        const DebugFadeIn: React.FC<{ children: ReactNode }> = ({ children }) => {
-                          React.useEffect(() => {
-                            console.log('[DEBUG] DebugFadeIn MOUNT for', product.id);
-                            return () => {
-                              console.log('[DEBUG] DebugFadeIn UNMOUNT for', product.id);
-                            };
-                          }, []);
-                          return <>{children}</>;
-                        };
                         return (
                           <motion.div
                             key={product.id}
@@ -416,37 +384,23 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                             data-product-id={product.id}
+                            onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
+                            onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
                           >
-                            <AnimatePresence mode="wait" initial={false}>
-                              <DebugFadeIn>
-                                <motion.div
-                                  key={`fadein-${product.id}`}
-                                  className="flex items-center w-full"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  transition={{ duration: 0.3 }}
-                                  style={{ width: '100%' }}
-                                  onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
-                                  onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
-                                >
-                                  <img 
-                                    src={product.image_url || '/placeholder.png'} 
-                                    alt={product.title} 
-                                    className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                    onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                      {product.title}
-                                    </div>
-                                    <div className="font-body text-orange-cream font-bold text-sm">
-                                      ${product.price.toFixed(2)}
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              </DebugFadeIn>
-                            </AnimatePresence>
+                            <img 
+                              src={product.image_url || '/placeholder.png'} 
+                              alt={product.title} 
+                              className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                              onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                {product.title}
+                              </div>
+                              <div className="font-body text-orange-cream font-bold text-sm">
+                                ${product.price.toFixed(2)}
+                              </div>
+                            </div>
                           </motion.div>
                         );
                       })}
