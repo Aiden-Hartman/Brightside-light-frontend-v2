@@ -249,7 +249,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                   ) : (
                     <>
                       <div className="space-y-4 mb-6">
-                        {sortByTier(selectedProducts).map((product) => {
+                        {selectedProducts.map((product) => {
                           const isJustAdded = product.id === justAddedId;
                           console.log('[DEBUG] Rendering product card:', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
                           if (isJustAdded && !showInfo) {
@@ -367,7 +367,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                 ) : (
                   <>
                     <div className="space-y-4 mb-6">
-                      {sortByTier(selectedProducts).map((product) => {
+                      {selectedProducts.map((product) => {
                         const isJustAdded = product.id === justAddedId;
                         console.log('[DEBUG] Rendering product card:', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
                         if (isJustAdded && !showInfo) {

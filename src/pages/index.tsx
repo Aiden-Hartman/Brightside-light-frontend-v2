@@ -304,20 +304,19 @@ export default function HomePage() {
           setTimeout(() => {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
             const summaryPanel = document.querySelector('[data-summary-panel]');
-            if (sourceCard && summaryPanel) {
-              // Find the specific product image in the summary panel
-              const targetProductCard = summaryPanel.querySelector(`[data-product-id="${pid}"]`);
+            function tryAnimate(retries = 5) {
+              if (!sourceCard || !summaryPanel) return;
+              // Always target the last product card in the summary panel
+              const productCards = summaryPanel.querySelectorAll('.glass-panel[data-product-id]');
+              const targetProductCard = productCards[productCards.length - 1];
               if (targetProductCard) {
                 animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
-              } else {
-                // Fallback to the first image in the summary panel
-                const firstProductCard = summaryPanel.querySelector('.glass-panel');
-                if (firstProductCard) {
-                  animateProductImage(sourceCard as HTMLElement, firstProductCard as HTMLElement);
-                }
+              } else if (retries > 0) {
+                setTimeout(() => tryAnimate(retries - 1), 100);
               }
             }
-          }, 400); // Increased delay to wait for panel animation
+            tryAnimate();
+          }, 400);
           
           // Shimmer logic: only trigger if not shown yet and first selection
           if (!nextShimmerShown[catKey]) {
