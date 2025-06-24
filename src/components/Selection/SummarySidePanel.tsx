@@ -250,33 +250,35 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                               transition={{ duration: 0.3 }}
                               data-product-id={product.id}
                             >
-                              {/* Only show image and info if not just added, or if just added and showInfo is true */}
-                              {(!isJustAdded || showInfo) ? (
-                                <motion.div
-                                  key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
-                                  className="flex items-center w-full"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ duration: 0.3 }}
-                                  style={{ width: '100%' }}
-                                >
-                                  <img 
-                                    src={product.image_url || '/placeholder.png'} 
-                                    alt={product.title} 
-                                    className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                      {product.title}
+                              <AnimatePresence mode="wait" initial={false}>
+                                {(!isJustAdded || showInfo) ? (
+                                  <motion.div
+                                    key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
+                                    className="flex items-center w-full"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    style={{ width: '100%' }}
+                                  >
+                                    <img 
+                                      src={product.image_url || '/placeholder.png'} 
+                                      alt={product.title} 
+                                      className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                        {product.title}
+                                      </div>
+                                      <div className="font-body text-orange-cream font-bold text-sm">
+                                        ${product.price.toFixed(2)}
+                                      </div>
                                     </div>
-                                    <div className="font-body text-orange-cream font-bold text-sm">
-                                      ${product.price.toFixed(2)}
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              ) : (
-                                <div style={{ height: '4rem' }} />
-                              )}
+                                  </motion.div>
+                                ) : (
+                                  <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />
+                                )}
+                              </AnimatePresence>
                             </motion.div>
                           );
                         })}
@@ -373,33 +375,35 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                             transition={{ duration: 0.3 }}
                             data-product-id={product.id}
                           >
-                            {/* Only show image and info if not just added, or if just added and showInfo is true */}
-                            {(!isJustAdded || showInfo) ? (
-                              <motion.div
-                                key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
-                                className="flex items-center w-full"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                                style={{ width: '100%' }}
-                              >
-                                <img 
-                                  src={product.image_url || '/placeholder.png'} 
-                                  alt={product.title} 
-                                  className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                    {product.title}
+                            <AnimatePresence mode="wait" initial={false}>
+                              {(!isJustAdded || showInfo) ? (
+                                <motion.div
+                                  key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
+                                  className="flex items-center w-full"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  style={{ width: '100%' }}
+                                >
+                                  <img 
+                                    src={product.image_url || '/placeholder.png'} 
+                                    alt={product.title} 
+                                    className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                                      {product.title}
+                                    </div>
+                                    <div className="font-body text-orange-cream font-bold text-sm">
+                                      ${product.price.toFixed(2)}
+                                    </div>
                                   </div>
-                                  <div className="font-body text-orange-cream font-bold text-sm">
-                                    ${product.price.toFixed(2)}
-                                  </div>
-                                </div>
-                              </motion.div>
-                            ) : (
-                              <div style={{ height: '4rem' }} />
-                            )}
+                                </motion.div>
+                              ) : (
+                                <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />
+                              )}
+                            </AnimatePresence>
                           </motion.div>
                         );
                       })}
