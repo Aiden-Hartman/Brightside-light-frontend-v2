@@ -25,7 +25,7 @@ function sortByTier(products: Product[]): Product[] {
 
 const ALLOWED_ORIGIN = "https://brightside-light-frontend-v2.vercel.app";
 
-const IMAGE_ANIMATION_DURATION = 400; // ms, matches Framer Motion duration
+const IMAGE_ANIMATION_DURATION = 800; // ms, matches Framer Motion duration
 
 const SummarySidePanel: React.FC<SummarySidePanelProps> = ({ 
   selectedProducts, 
