@@ -253,6 +253,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                               {/* Only show image and info if not just added, or if just added and showInfo is true */}
                               {(!isJustAdded || showInfo) ? (
                                 <motion.div
+                                  key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
                                   className="flex items-center w-full"
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
@@ -274,7 +275,6 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                                   </div>
                                 </motion.div>
                               ) : (
-                                // Optionally, empty space to preserve layout
                                 <div style={{ height: '4rem' }} />
                               )}
                             </motion.div>
@@ -376,6 +376,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                             {/* Only show image and info if not just added, or if just added and showInfo is true */}
                             {(!isJustAdded || showInfo) ? (
                               <motion.div
+                                key={isJustAdded && showInfo ? `fadein-${product.id}` : `placeholder-${product.id}`}
                                 className="flex items-center w-full"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -397,7 +398,6 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                                 </div>
                               </motion.div>
                             ) : (
-                              // Optionally, empty space to preserve layout
                               <div style={{ height: '4rem' }} />
                             )}
                           </motion.div>
