@@ -139,16 +139,27 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
         <span
-          className="text-sm font-display mb-2 flex items-center justify-center w-full"
-          style={{ letterSpacing: '0.1em' }}
+          className="text-sm font-display mb-2"
+          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '0.1em' }}
         >
           Summary
+        </span>
+        {selectedCount > 0 && (
+          <span className="bg-orange-cream text-dark-green-start text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center mb-2">
+            {selectedCount}
+          </span>
+        )}
+        <span
+          className="text-lg"
+          style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
+        >
+          ▾
         </span>
       </motion.button>
 
       {/* Mobile Sticky Tab */}
       <motion.button
-        className="fixed bottom-4 right-4 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white px-4 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:hidden flex items-center justify-center"
+        className="fixed bottom-4 right-4 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white px-4 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:hidden flex"
         onClick={onToggle}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -156,7 +167,20 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
         animate={{ y: isOpen ? -400 : 0 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
-        <span className="text-sm font-display w-full text-center">Summary</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-display">Summary</span>
+          {selectedCount > 0 && (
+            <span className="bg-orange-cream text-dark-green-start text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+              {selectedCount}
+            </span>
+          )}
+          <span
+            className="text-lg"
+            style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
+          >
+            ▾
+          </span>
+        </div>
       </motion.button>
 
       {/* Side Panel */}
