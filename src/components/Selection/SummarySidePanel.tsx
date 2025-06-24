@@ -123,13 +123,20 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   if (animatingProductId && !fadeInProductId) {
     placeholderIndex = sortedProducts.findIndex(p => p.id === animatingProductId);
     if (placeholderIndex === -1) {
+      // If not found, add to end
       placeholderIndex = sortedProducts.length;
+      displayProducts = [
+        ...sortedProducts,
+        { id: '__placeholder__', title: '', price: 0 }
+      ];
+    } else {
+      // Replace the animating product with the placeholder
+      displayProducts = [
+        ...sortedProducts.slice(0, placeholderIndex),
+        { id: '__placeholder__', title: '', price: 0 },
+        ...sortedProducts.slice(placeholderIndex + 1)
+      ];
     }
-    displayProducts = [
-      ...sortedProducts.slice(0, placeholderIndex),
-      { id: '__placeholder__', title: '', price: 0 },
-      ...sortedProducts.slice(placeholderIndex)
-    ];
     console.log('[DEBUG] SummarySidePanel: Rendering placeholder at', placeholderIndex, displayProducts);
   }
   useEffect(() => {
