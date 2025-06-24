@@ -19,7 +19,7 @@ import { animateProductImage } from '../lib/animateProductImage';
 
 export default function HomePage() {
   const [openSection, setOpenSection] = useState<string | null>(PRODUCT_CATEGORIES[0].key);
-  const [selectedProducts, setSelectedProducts] = useState<Record<string, Product[]>>({});
+  const [selectedProducts, setSelectedProducts] = useState<{ product: Product, catKey: string }[]>([]);
   const [categoryProducts, setCategoryProducts] = useState<Record<string, Product[]>>({});
   const [categoryLoading, setCategoryLoading] = useState<Record<string, boolean>>({});
   const [categoryError, setCategoryError] = useState<Record<string, boolean>>({});
@@ -286,29 +286,29 @@ export default function HomePage() {
     const prod = categoryProducts[catKey].find(p => p.id === pid);
     if (prod) {
       setSelectedProducts(prev => {
-        const currentSelections = prev[catKey] || [];
-        const isSelected = currentSelections.length === 1 && currentSelections[0].id === pid;
-        
+        // Remove any existing product from this category
+        const filtered = prev.filter(item => item.catKey !== catKey);
+        // Check if this product is already selected (deselect)
+        const isSelected = prev.some(item => item.catKey === catKey && item.product.id === pid);
         if (isSelected) {
-          // Deselect if already selected
-          return {
-            ...prev,
-            [catKey]: []
-          };
+          // Deselect
+          return filtered;
         } else {
-          // Select only the new product
+          // Add new product to end or replace in place
           setLastSelectedProduct(prod);
           setShowSummaryPanel(true);
-          
-          // Trigger animation after a short delay to ensure DOM is updated
+          // Animation logic: find the correct index (replacement or end)
           setTimeout(() => {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
             const summaryPanel = document.querySelector('[data-summary-panel]');
             function tryAnimate(retries = 5) {
               if (!sourceCard || !summaryPanel) return;
-              // Always target the last product card in the summary panel
+              // Find the index where the new product will appear
+              const newList = [...filtered, { product: prod, catKey }];
               const productCards = summaryPanel.querySelectorAll('.glass-panel[data-product-id]');
-              const targetProductCard = productCards[productCards.length - 1];
+              // Find the index in the new list where the product will be
+              const targetIndex = newList.findIndex(item => item.catKey === catKey);
+              const targetProductCard = productCards[targetIndex];
               if (targetProductCard) {
                 animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
               } else if (retries > 0) {
@@ -317,25 +317,18 @@ export default function HomePage() {
             }
             tryAnimate();
           }, 400);
-          
-          // Shimmer logic: only trigger if not shown yet and first selection
+          // Shimmer logic (unchanged)
           if (!nextShimmerShown[catKey]) {
             setNextShimmerShown(shown => ({ ...shown, [catKey]: true }));
-            // Add shimmer class
             const btn = buttonRefs.current[catKey];
             if (btn) {
               btn.classList.remove('btn-next-shimmer');
-              // Force reflow to restart animation
               void btn.offsetWidth;
               btn.classList.add('btn-next-shimmer');
               setTimeout(() => btn.classList.remove('btn-next-shimmer'), 1300);
             }
           }
-          
-          return {
-            ...prev,
-            [catKey]: [prod]
-          };
+          return [...filtered, { product: prod, catKey }];
         }
       });
     }
@@ -425,7 +418,7 @@ export default function HomePage() {
                   <>
                     <ProductRow
                       products={categoryProducts[cat.key]}
-                      selectedProductIds={selectedProducts[cat.key]?.map(p => p.id) || []}
+                      selectedProductIds={selectedProducts.filter(item => item.catKey === cat.key).map(item => item.product.id) || []}
                       onSelect={pid => handleProductSelect(cat.key, pid)}
                       onExplainWithAI={handleExplainWithAI}
                     />
@@ -468,8 +461,8 @@ export default function HomePage() {
             ))}
             {/* Summary Side Panel */}
             <SummarySidePanel
-              selectedProducts={Object.values(selectedProducts).flat()}
-              total={Object.values(selectedProducts).flat().reduce((sum, p) => sum + (p.price || 0), 0)}
+              selectedProducts={selectedProducts.map(item => item.product)}
+              total={selectedProducts.reduce((sum, item) => sum + (item.product.price || 0), 0)}
               isOpen={showSummaryPanel}
               onToggle={() => setShowSummaryPanel(!showSummaryPanel)}
               onClose={() => setShowSummaryPanel(false)}
