@@ -42,10 +42,15 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   const [fadeInProductId, setFadeInProductId] = useState<string | null>(null);
   const autoCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    console.log('[DEBUG] SummarySidePanel: animatingProductId', animatingProductId);
+  }, [animatingProductId]);
+
   // Listen for custom event to trigger fade-in after animation
   useEffect(() => {
     function handleAnimationDone(e: CustomEvent) {
       if (e.detail && e.detail.productId) {
+        console.log('[DEBUG] SummarySidePanel: Received summary-image-animation-done event', e.detail.productId);
         setFadeInProductId(e.detail.productId);
       }
     }
@@ -113,14 +118,11 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
 
   // Helper: get sorted products and placeholder logic
   const sortedProducts = sortByTier(selectedProducts);
-  // If animating, insert a placeholder at the correct index
   let displayProducts = sortedProducts;
   let placeholderIndex = -1;
   if (animatingProductId && !fadeInProductId) {
-    // Find where the animating product will go
     placeholderIndex = sortedProducts.findIndex(p => p.id === animatingProductId);
     if (placeholderIndex === -1) {
-      // If not found, add to end
       placeholderIndex = sortedProducts.length;
     }
     displayProducts = [
@@ -128,7 +130,11 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       { id: '__placeholder__', title: '', price: 0 },
       ...sortedProducts.slice(placeholderIndex)
     ];
+    console.log('[DEBUG] SummarySidePanel: Rendering placeholder at', placeholderIndex, displayProducts);
   }
+  useEffect(() => {
+    console.log('[DEBUG] SummarySidePanel: displayProducts', displayProducts);
+  });
 
   const selectedCount = selectedProducts.length;
 
@@ -204,7 +210,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
             
             {/* Desktop Panel */}
             <motion.div
-              className="fixed right-0 top-0 h-full w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col rounded-l-2xl border border-dark-green-start/30"
+              className="fixed right-0 top-0 h-[40vh] w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col rounded-l-2xl border border-dark-green-start/30"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -241,6 +247,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                           ) : (
                             <AnimatePresence key={product.id}>
                               {(fadeInProductId === product.id || !animatingProductId) && (
+                                console.log('[DEBUG] SummarySidePanel: Fading in product card', product.id),
                                 <motion.div
                                   className="flex items-center gap-4 glass-panel rounded-xl p-4"
                                   initial={{ opacity: 0 }}
@@ -353,6 +360,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
                         ) : (
                           <AnimatePresence key={product.id}>
                             {(fadeInProductId === product.id || !animatingProductId) && (
+                              console.log('[DEBUG] SummarySidePanel: Fading in product card', product.id),
                               <motion.div
                                 className="flex items-center gap-4 glass-panel rounded-xl p-4"
                                 initial={{ opacity: 0 }}

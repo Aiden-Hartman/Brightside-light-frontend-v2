@@ -286,10 +286,12 @@ export default function HomePage() {
   const handleProductSelect = (catKey: string, pid: string) => {
     const prod = categoryProducts[catKey].find(p => p.id === pid);
     if (prod) {
+      console.log('[DEBUG] handleProductSelect: Product selected', { catKey, pid, prod });
       setSelectedProducts(prev => {
         const currentSelections = prev[catKey] || [];
         const isSelected = currentSelections.length === 1 && currentSelections[0].id === pid;
         if (isSelected) {
+          console.log('[DEBUG] handleProductSelect: Deselecting product', { catKey, pid });
           return {
             ...prev,
             [catKey]: []
@@ -298,23 +300,28 @@ export default function HomePage() {
           setLastSelectedProduct(prod);
           setShowSummaryPanel(true);
           setAnimatingProductId(pid); // Set animating product
+          console.log('[DEBUG] handleProductSelect: Set animatingProductId', pid);
           setTimeout(() => {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
             const summaryPanel = document.querySelector('[data-summary-panel]');
             if (sourceCard && summaryPanel) {
               const targetProductCard = summaryPanel.querySelector(`[data-product-id="${pid}"]`);
               const onComplete = () => {
-                // Dispatch custom event when animation is done
+                console.log('[DEBUG] handleProductSelect: Animation complete, dispatching event', pid);
                 window.dispatchEvent(new CustomEvent('summary-image-animation-done', { detail: { productId: pid } }));
               };
               if (targetProductCard) {
+                console.log('[DEBUG] handleProductSelect: Triggering animateProductImage', { sourceCard, targetProductCard });
                 animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement, onComplete);
               } else {
                 const firstProductCard = summaryPanel.querySelector('.glass-panel');
                 if (firstProductCard) {
+                  console.log('[DEBUG] handleProductSelect: Triggering animateProductImage (fallback)', { sourceCard, firstProductCard });
                   animateProductImage(sourceCard as HTMLElement, firstProductCard as HTMLElement, onComplete);
                 }
               }
+            } else {
+              console.log('[DEBUG] handleProductSelect: Source or summaryPanel not found', { sourceCard, summaryPanel });
             }
           }, 400);
           if (!nextShimmerShown[catKey]) {
@@ -327,10 +334,12 @@ export default function HomePage() {
               setTimeout(() => btn.classList.remove('btn-next-shimmer'), 1300);
             }
           }
-          return {
+          const newState = {
             ...prev,
             [catKey]: [prod]
           };
+          console.log('[DEBUG] handleProductSelect: Updated selectedProducts', newState);
+          return newState;
         }
       });
     }
