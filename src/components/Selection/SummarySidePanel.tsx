@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Product } from '../../types';
 import { redirectParent } from '../../lib/redirectParent';
@@ -26,6 +26,8 @@ function sortByTier(products: Product[]): Product[] {
 
 const SummarySidePanel = forwardRef<SummaryPanelHandle, SummarySidePanelProps>(
   ({ selectedProducts, total }, ref) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     // Expose triggerAnimation method to parent
     useImperativeHandle(ref, () => ({
       triggerAnimation: (productId: string) => {
@@ -43,6 +45,38 @@ const SummarySidePanel = forwardRef<SummaryPanelHandle, SummarySidePanelProps>(
         });
       }
     }), [selectedProducts]);
+
+    const handleSubscribe = () => {
+      if (selectedProducts.length === 0) return;
+      setIsLoading(true);
+      setError(null);
+      const sellingPlanId = process.env.REACT_APP_SUBSCRIPTION_PLAN_ID;
+      const items = selectedProducts.map((product) => ({
+        id: product.variant_id,
+        quantity: 1,
+        selling_plan: sellingPlanId,
+      }));
+      const validItems = items.filter((item) => !!item.id);
+      const message = {
+        type: 'ADD_SUBSCRIPTION_TO_CART',
+        payload: { items: validItems },
+      };
+      if (window.top) {
+        try {
+          window.top.postMessage(message, '*');
+        } catch (err) {
+          setError('Failed to add subscription to cart. Please try again.');
+        }
+      } else {
+        setError('Failed to add subscription to cart. Please try again.');
+      }
+      setTimeout(() => {
+        setIsLoading(false);
+        if (!error) {
+          setError('Something went wrong adding your bundle. Please try again.');
+        }
+      }, 2500);
+    };
 
     return (
       <aside className="w-96 h-full flex flex-col z-30 bg-white shadow-2xl rounded-l-2xl border border-dark-green-start/30" style={{ minHeight: '100vh' }} data-summary-panel>
@@ -84,6 +118,26 @@ const SummarySidePanel = forwardRef<SummaryPanelHandle, SummarySidePanelProps>(
                     </motion.div>
                   ))}
                 </div>
+                {error && (
+                  <div className="text-red-500 text-center mb-4">{error}</div>
+                )}
+                <button
+                  className="btn-primary w-full text-lg flex items-center justify-center gap-2"
+                  disabled={selectedProducts.length === 0 || isLoading}
+                  onClick={handleSubscribe}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="animate-spin">⟳</span>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Subscribe
+                      <span className="font-bold">${total.toFixed(2)}</span>
+                    </>
+                  )}
+                </button>
               </>
             )}
           </div>
