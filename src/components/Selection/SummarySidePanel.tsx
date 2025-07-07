@@ -6,6 +6,8 @@ import { redirectParent } from '../../lib/redirectParent';
 interface SummarySidePanelProps {
   selectedProducts: Product[];
   total: number;
+  lastSelectedProductId?: string;
+  lastSelectedProductCatKey?: string;
 }
 
 const TIER_ORDER = ['good', 'better', 'best'];
@@ -26,7 +28,9 @@ const IMAGE_ANIMATION_DURATION = 1000; // ms, matches Framer Motion duration
 
 const SummarySidePanel: React.FC<SummarySidePanelProps> = ({ 
   selectedProducts, 
-  total
+  total,
+  lastSelectedProductId,
+  lastSelectedProductCatKey
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +57,37 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    // Only run if a new product was just added and showInfo is true
+    if (justAddedId && showInfo && lastSelectedProductId && lastSelectedProductCatKey) {
+      // Try to find the source card in the main content
+      const sourceCard = document.querySelector(`[data-product-id="${lastSelectedProductId}"]`);
+      // Try to find the target card in the summary panel
+      const summaryPanel = document.querySelector('[data-summary-panel]');
+      if (!sourceCard) {
+        console.log('[ANIMATION DEBUG] (SummarySidePanel) sourceCard not found for', lastSelectedProductId);
+        return;
+      }
+      if (!summaryPanel) {
+        console.log('[ANIMATION DEBUG] (SummarySidePanel) summaryPanel not found');
+        return;
+      }
+      // Find the target product card in the summary panel
+      const productCards = summaryPanel.querySelectorAll('.glass-panel[data-product-id]');
+      const targetIndex = selectedProducts.findIndex(p => p.id === lastSelectedProductId);
+      const targetProductCard = productCards[targetIndex];
+      if (!targetProductCard) {
+        console.log('[ANIMATION DEBUG] (SummarySidePanel) targetProductCard not found for targetIndex', targetIndex, 'selectedProducts', selectedProducts, 'productCards.length', productCards.length);
+        return;
+      }
+      console.log('[ANIMATION DEBUG] (SummarySidePanel) Animating from sourceCard to targetProductCard', { lastSelectedProductId, targetIndex });
+      // Import animateProductImage at the top if not already
+      import('../../lib/animateProductImage').then(({ animateProductImage }) => {
+        animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
+      });
+    }
+  }, [justAddedId, showInfo, lastSelectedProductId, lastSelectedProductCatKey, selectedProducts]);
 
   const handleSubscribe = () => {
     if (selectedProducts.length === 0) return;

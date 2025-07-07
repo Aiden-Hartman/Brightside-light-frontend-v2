@@ -34,6 +34,8 @@ export default function HomePage() {
   
   // New state for side panel
   const [lastSelectedProduct, setLastSelectedProduct] = useState<Product | null>(null);
+  // Add state for lastSelectedProductCatKey
+  const [lastSelectedProductCatKey, setLastSelectedProductCatKey] = useState<string | null>(null);
 
   // Layout constants for perfect alignment
   const CHAT_WIDTH = 384;
@@ -294,6 +296,7 @@ export default function HomePage() {
         } else {
           // Add new product to end or replace in place
           setLastSelectedProduct(prod);
+          setLastSelectedProductCatKey(catKey);
           // Animation logic: find the correct index (replacement or end)
           setTimeout(() => {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
@@ -472,6 +475,8 @@ export default function HomePage() {
           <SummarySidePanel
             selectedProducts={selectedProducts.map(item => item.product)}
             total={selectedProducts.reduce((sum, item) => sum + (item.product.price || 0), 0)}
+            lastSelectedProductId={lastSelectedProduct?.id}
+            lastSelectedProductCatKey={lastSelectedProductCatKey}
           />
         </div>
       </div>
