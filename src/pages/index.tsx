@@ -332,10 +332,10 @@ export default function HomePage() {
   return (
     <div className="relative min-h-screen w-full bg-[#FFFDF5] text-[#527055] flex flex-col">
       {/* Main 3-panel layout */}
-      <div className="flex flex-1 flex-col md:flex-row w-full max-w-full mx-auto" style={{ minHeight: '100vh' }}>
+      <div className="flex flex-1 flex-col md:flex-row w-full max-w-full mx-auto">
         {/* Chat Sidebar */}
         <div className="w-96 flex-shrink-0 flex flex-col z-30">
-          <ChatSidebar className="glass-panel rounded-r-3xl h-full">
+          <ChatSidebar className="glass-panel rounded-r-3xl">
             <ChatWindow>
               {chatMessages.length === 0 ? (
                 <MessageBubble 
