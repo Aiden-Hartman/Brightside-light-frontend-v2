@@ -214,6 +214,9 @@ export default function HomePage() {
 
   // Handler: Previous/Next navigation
   const handleNavigateCategory = (direction: 'prev' | 'next') => {
+    // Reset animation trigger state when changing categories
+    setLastSelectedProduct(null);
+    setLastSelectedProductCatKey(null);
     const idx = getCurrentCategoryIndex();
     if (idx === -1) return;
     if (direction === 'next') {
