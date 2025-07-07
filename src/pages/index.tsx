@@ -33,7 +33,6 @@ export default function HomePage() {
   const [pendingScrollKey, setPendingScrollKey] = useState<string | null>(null);
   
   // New state for side panel
-  const [showSummaryPanel, setShowSummaryPanel] = useState(false);
   const [lastSelectedProduct, setLastSelectedProduct] = useState<Product | null>(null);
 
   // Layout constants for perfect alignment
@@ -218,7 +217,6 @@ export default function HomePage() {
     if (direction === 'next') {
       if (idx === PRODUCT_CATEGORIES.length - 1) {
         // Open the side panel instead of the summary dropdown
-        setShowSummaryPanel(true);
         return;
       }
       const newKey = PRODUCT_CATEGORIES[idx + 1].key;
@@ -296,7 +294,6 @@ export default function HomePage() {
         } else {
           // Add new product to end or replace in place
           setLastSelectedProduct(prod);
-          setShowSummaryPanel(true);
           // Animation logic: find the correct index (replacement or end)
           setTimeout(() => {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
@@ -335,13 +332,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#FFFDF5] text-[#527055]">
-      {/* Chat Sidebar */}
-      <div
-        className="fixed left-0 z-30 w-[384px] pointer-events-none"
-        style={{ top: '2rem', height: '35vh' }}
-      >
-        <div className="w-full h-full pointer-events-auto">
+    <div className="relative min-h-screen w-full bg-[#FFFDF5] text-[#527055] flex flex-col">
+      {/* Main 3-panel layout */}
+      <div className="flex flex-1 flex-col md:flex-row w-full max-w-full mx-auto" style={{ minHeight: '100vh' }}>
+        {/* Chat Sidebar */}
+        <div className="w-96 flex-shrink-0 flex flex-col z-30" style={{ minHeight: '100vh' }}>
           <ChatSidebar className="glass-panel rounded-r-3xl h-full">
             <ChatWindow>
               {chatMessages.length === 0 ? (
@@ -377,98 +372,97 @@ export default function HomePage() {
             />
           </ChatSidebar>
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="ml-[384px] pl-12 pr-8 py-8">
-        <main className="max-w-[900px] mx-auto">
-          <div className="space-y-8">
-            {PRODUCT_CATEGORIES.map((cat, idx) => (
-              <CategoryPanel
-                key={cat.key}
-                title={cat.label}
-                open={openSection === cat.key}
-                onToggle={() => {
-                  if (openSection !== cat.key) {
-                    setOpenSection(cat.key);
-                    setPendingScrollKey(cat.key);
-                  } else {
-                    setOpenSection(null);
-                  }
-                }}
-                bannerColor="main-green"
-                data-category-panel={cat.key}
-                onPanelOpenComplete={() => {
-                  if (pendingScrollKey === cat.key) {
-                    scrollToPanel(cat.key);
-                    setPendingScrollKey(null);
-                  }
-                }}
-              >
-                {/* <div className="mb-6 text-white/90">
-                  Here are our top three options for {cat.label.toLowerCase()} products.
-                </div> */}
-                {categoryLoading[cat.key] ? (
-                  <LoadingSpinner />
-                ) : categoryError[cat.key] ? (
-                  <div className="text-red-200 py-4">
-                    Sorry, we couldn't load products for this category. Please try again later.
-                  </div>
-                ) : categoryProducts[cat.key] && categoryProducts[cat.key].length > 0 ? (
-                  <>
-                    <ProductRow
-                      products={categoryProducts[cat.key]}
-                      selectedProductIds={selectedProducts.filter(item => item.catKey === cat.key).map(item => item.product.id) || []}
-                      onSelect={pid => handleProductSelect(cat.key, pid)}
-                      onExplainWithAI={handleExplainWithAI}
-                    />
-                    {/* Button Group Below ProductRow */}
-                    <div className="flex items-center justify-between mt-6">
-                      {/* Previous/Next Group */}
-                      <div className="flex gap-3">
-                        {idx !== 0 && (
+        {/* Gap between chat and main content */}
+        <div className="hidden md:block" style={{ width: '48px' }} />
+        {/* Main Content */}
+        <div className="flex-1 px-4 py-8 max-w-[900px] mx-auto">
+          <main>
+            <div className="space-y-8">
+              {PRODUCT_CATEGORIES.map((cat, idx) => (
+                <CategoryPanel
+                  key={cat.key}
+                  title={cat.label}
+                  open={openSection === cat.key}
+                  onToggle={() => {
+                    if (openSection !== cat.key) {
+                      setOpenSection(cat.key);
+                      setPendingScrollKey(cat.key);
+                    } else {
+                      setOpenSection(null);
+                    }
+                  }}
+                  bannerColor="main-green"
+                  data-category-panel={cat.key}
+                  onPanelOpenComplete={() => {
+                    if (pendingScrollKey === cat.key) {
+                      scrollToPanel(cat.key);
+                      setPendingScrollKey(null);
+                    }
+                  }}
+                >
+                  {/* <div className="mb-6 text-white/90">
+                    Here are our top three options for {cat.label.toLowerCase()} products.
+                  </div> */}
+                  {categoryLoading[cat.key] ? (
+                    <LoadingSpinner />
+                  ) : categoryError[cat.key] ? (
+                    <div className="text-red-200 py-4">
+                      Sorry, we couldn't load products for this category. Please try again later.
+                    </div>
+                  ) : categoryProducts[cat.key] && categoryProducts[cat.key].length > 0 ? (
+                    <>
+                      <ProductRow
+                        products={categoryProducts[cat.key]}
+                        selectedProductIds={selectedProducts.filter(item => item.catKey === cat.key).map(item => item.product.id) || []}
+                        onSelect={pid => handleProductSelect(cat.key, pid)}
+                        onExplainWithAI={handleExplainWithAI}
+                      />
+                      <div className="flex items-center justify-between mt-6">
+                        <div className="flex gap-3">
+                          {idx !== 0 && (
+                            <button
+                              className="px-6 py-2 rounded-lg font-body bg-dark-green-start text-white transition-all duration-300 hover:bg-orange-cream hover:text-dark-green-start"
+                              onClick={() => handleNavigateCategory('prev')}
+                            >
+                              ← Previous
+                            </button>
+                          )}
                           <button
-                            className="px-6 py-2 rounded-lg font-body bg-dark-green-start text-white transition-all duration-300 hover:bg-orange-cream hover:text-dark-green-start"
-                            onClick={() => handleNavigateCategory('prev')}
+                            ref={el => (buttonRefs.current[cat.key] = el)}
+                            className="px-6 py-2 rounded-lg font-body bg-dark-green-start text-white transition-all duration-300 hover:bg-orange-cream hover:text-dark-green-start focus:outline-none"
+                            onClick={() => handleNavigateCategory('next')}
                           >
-                            ← Previous
+                            Next →
                           </button>
-                        )}
+                        </div>
                         <button
-                          ref={el => (buttonRefs.current[cat.key] = el)}
-                          className="px-6 py-2 rounded-lg font-body bg-dark-green-start text-white transition-all duration-300 hover:bg-orange-cream hover:text-dark-green-start focus:outline-none"
-                          onClick={() => handleNavigateCategory('next')}
+                          className="px-6 py-2 rounded-lg font-body bg-white border border-orange-cream text-orange-cream flex items-center gap-2 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange-cream/50"
+                          onClick={() => { handleCompareWithAI(cat.key); }}
                         >
-                          Next →
+                          <span role="img" aria-label="sparkles">✨</span>
+                          <span className="shimmer-text">Compare products with AI</span>
                         </button>
                       </div>
-                      {/* Compare with AI Button */}
-                      <button
-                        className="px-6 py-2 rounded-lg font-body bg-white border border-orange-cream text-orange-cream flex items-center gap-2 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-orange-cream/50"
-                        onClick={() => { handleCompareWithAI(cat.key); }}
-                      >
-                        <span role="img" aria-label="sparkles">✨</span>
-                        <span className="shimmer-text">Compare products with AI</span>
-                      </button>
+                    </>
+                  ) : (
+                    <div className="text-white/70 py-4">
+                      No products found for this category.
                     </div>
-                  </>
-                ) : (
-                  <div className="text-white/70 py-4">
-                    No products found for this category.
-                  </div>
-                )}
-              </CategoryPanel>
-            ))}
-            {/* Summary Side Panel */}
-            <SummarySidePanel
-              selectedProducts={selectedProducts.map(item => item.product)}
-              total={selectedProducts.reduce((sum, item) => sum + (item.product.price || 0), 0)}
-              isOpen={showSummaryPanel}
-              onToggle={() => setShowSummaryPanel(!showSummaryPanel)}
-              onClose={() => setShowSummaryPanel(false)}
-            />
-          </div>
-        </main>
+                  )}
+                </CategoryPanel>
+              ))}
+            </div>
+          </main>
+        </div>
+        {/* Gap between main content and summary panel */}
+        <div className="hidden md:block" style={{ width: '48px' }} />
+        {/* Summary Panel - always open */}
+        <div className="w-96 flex-shrink-0 flex flex-col z-30" style={{ minHeight: '100vh' }}>
+          <SummarySidePanel
+            selectedProducts={selectedProducts.map(item => item.product)}
+            total={selectedProducts.reduce((sum, item) => sum + (item.product.price || 0), 0)}
+          />
+        </div>
       </div>
     </div>
   );

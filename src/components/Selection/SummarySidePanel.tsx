@@ -6,9 +6,6 @@ import { redirectParent } from '../../lib/redirectParent';
 interface SummarySidePanelProps {
   selectedProducts: Product[];
   total: number;
-  isOpen: boolean;
-  onToggle: () => void;
-  onClose: () => void;
 }
 
 const TIER_ORDER = ['good', 'better', 'best'];
@@ -29,84 +26,30 @@ const IMAGE_ANIMATION_DURATION = 1000; // ms, matches Framer Motion duration
 
 const SummarySidePanel: React.FC<SummarySidePanelProps> = ({ 
   selectedProducts, 
-  total, 
-  isOpen, 
-  onToggle, 
-  onClose 
+  total
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const autoCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-close logic
-  useEffect(() => {
-    if (isOpen && !isHovering) {
-      // Clear any existing timeout
-      if (autoCloseTimeoutRef.current) {
-        clearTimeout(autoCloseTimeoutRef.current);
-      }
-      
-      // Set new timeout
-      autoCloseTimeoutRef.current = setTimeout(() => {
-        onClose();
-      }, 1500);
-    } else if (isOpen && isHovering) {
-      // Clear timeout when hovering to pause the countdown
-      if (autoCloseTimeoutRef.current) {
-        clearTimeout(autoCloseTimeoutRef.current);
-        autoCloseTimeoutRef.current = null;
-      }
-    } else if (!isOpen) {
-      // Clear timeout when panel is closed
-      if (autoCloseTimeoutRef.current) {
-        clearTimeout(autoCloseTimeoutRef.current);
-        autoCloseTimeoutRef.current = null;
-      }
-    }
-
-    return () => {
-      if (autoCloseTimeoutRef.current) {
-        clearTimeout(autoCloseTimeoutRef.current);
-      }
-    };
-  }, [isOpen, isHovering, onClose]);
-
-  React.useEffect(() => {
-    console.log('[DEBUG] selectedProducts:', selectedProducts.map(p => p.id));
-    console.log('[DEBUG] isOpen:', isOpen);
-  }, [selectedProducts, isOpen]);
-
   // Detect when a new product is added
   useEffect(() => {
-    if (!isOpen || selectedProducts.length === 0) return;
+    if (selectedProducts.length === 0) return;
     const lastProduct = selectedProducts[selectedProducts.length - 1];
-    console.log('[DEBUG] Checking for new product. lastProduct:', lastProduct?.id, 'justAddedId:', justAddedId);
     if (lastProduct && lastProduct.id !== justAddedId) {
       setJustAddedId(lastProduct.id);
       setShowInfo(false);
       if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
       animationTimeoutRef.current = setTimeout(() => {
         setShowInfo(true);
-        console.log('[DEBUG] setShowInfo(true) for product:', lastProduct.id);
       }, IMAGE_ANIMATION_DURATION);
-      console.log('[DEBUG] New product detected. Setting justAddedId:', lastProduct.id, 'and showInfo: false');
     }
-  }, [selectedProducts, isOpen]);
+  }, [selectedProducts]);
 
-  useEffect(() => {
-    console.log('[DEBUG] showInfo changed:', showInfo, 'justAddedId:', justAddedId);
-  }, [showInfo, justAddedId]);
-
-  // Clear timeout on unmount
   useEffect(() => {
     return () => {
-      if (autoCloseTimeoutRef.current) {
-        clearTimeout(autoCloseTimeoutRef.current);
-      }
       if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
     };
   }, []);
@@ -115,51 +58,27 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
     if (selectedProducts.length === 0) return;
     setIsLoading(true);
     setError(null);
-
     const sellingPlanId = process.env.REACT_APP_SUBSCRIPTION_PLAN_ID;
-
-    console.debug('[DEBUG] Preparing to send subscription message...');
-    console.debug('[DEBUG] Selected products:', selectedProducts);
-    console.debug('[DEBUG] Selling plan ID:', sellingPlanId);
-
-    if (!selectedProducts || selectedProducts.length === 0) {
-      console.warn('[WARNING] No selected products to submit!');
-      return;
-    }
-
+    if (!selectedProducts || selectedProducts.length === 0) return;
     const items = selectedProducts.map((product) => ({
       id: product.variant_id,
       quantity: 1,
       selling_plan: sellingPlanId,
     }));
-
     const validItems = items.filter((item) => !!item.id);
-    console.debug('[DEBUG] Mapped items:', items);
-    console.debug('[DEBUG] Valid items to submit:', validItems);
-
     const message = {
       type: 'ADD_SUBSCRIPTION_TO_CART',
-      payload: {
-        items: validItems,
-      },
+      payload: { items: validItems },
     };
-
-    console.debug('[DEBUG] Final message object:', message);
-    console.debug('[DEBUG] Attempting to send message to parent window...');
-
     if (window.top) {
       try {
         window.top.postMessage(message, '*');
-        console.debug('[DEBUG] Message sent successfully');
       } catch (err) {
-        console.error('[ERROR] Failed to send message:', err);
         setError('Failed to add subscription to cart. Please try again.');
       }
     } else {
-      console.warn('[WARNING] window.top is null or undefined!');
       setError('Failed to add subscription to cart. Please try again.');
     }
-
     setTimeout(() => {
       setIsLoading(false);
       if (!error) {
@@ -171,285 +90,90 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   const selectedCount = selectedProducts.length;
 
   return (
-    <>
-      {/* Sticky Tab - Always visible */}
-      <motion.button
-        className="fixed right-0 top-[20vh] -translate-y-1/2 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white py-4 px-2 rounded-l-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:flex hidden flex-col items-center justify-center min-h-[60px] w-12"
-        onClick={onToggle}
-        whileHover={{ x: -2 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ x: 0 }}
-        animate={{ x: isOpen ? -400 : 0 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <span
-          className="text-sm font-display mb-0"
-          style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '0.1em' }}
-        >
-          Summary
-        </span>
-      </motion.button>
-
-      {/* Mobile Sticky Tab */}
-      <motion.button
-        className="fixed bottom-4 right-4 z-40 bg-gradient-to-r from-dark-green-start to-dark-green-end text-white px-4 py-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:hidden flex min-h-[44px] min-w-[90px] items-center justify-center"
-        onClick={onToggle}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ y: 0 }}
-        animate={{ y: isOpen ? -400 : 0 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <span className="text-sm font-display">Summary</span>
-      </motion.button>
-
-      {/* Side Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              className="fixed inset-0 bg-black/20 z-30 md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onClose}
-            />
-            
-            {/* Desktop Panel */}
-            <motion.div
-              className="fixed right-0 top-0 h-[40vh] w-[400px] bg-white shadow-2xl z-50 md:flex hidden flex-col rounded-l-2xl border border-dark-green-start/30"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => {
-                setIsHovering(false);
-                onClose();
-              }}
-              data-summary-panel
-            >
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-display text-xl text-dark-green-start">Your Selection</h2>
-                    <button
-                      onClick={onClose}
-                      className="text-dark-green-start/70 hover:text-dark-green-start transition-colors"
+    <aside className="w-96 h-full flex flex-col z-30 bg-white shadow-2xl rounded-l-2xl border border-dark-green-start/30" style={{ minHeight: '100vh' }} data-summary-panel>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-display text-xl text-dark-green-start">Your Selection</h2>
+          </div>
+          {selectedProducts.length === 0 ? (
+            <div className="text-dark-green-start/70 py-8 text-center">
+              No products selected yet.
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4 mb-6">
+                {selectedProducts.map((product) => {
+                  const isJustAdded = product.id === justAddedId;
+                  if (isJustAdded && !showInfo) {
+                    return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
+                  }
+                  return (
+                    <motion.div
+                      key={product.id}
+                      className="flex items-center gap-4 glass-panel rounded-xl p-4"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                      data-product-id={product.id}
                     >
-                      <span className="text-2xl">×</span>
-                    </button>
-                  </div>
-
-                  {selectedProducts.length === 0 ? (
-                    <div className="text-dark-green-start/70 py-8 text-center">
-                      No products selected yet.
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-4 mb-6">
-                        {selectedProducts.map((product) => {
-                          const isJustAdded = product.id === justAddedId;
-                          console.log('[DEBUG] Rendering product card:', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
-                          if (isJustAdded && !showInfo) {
-                            console.log('[DEBUG] Returning placeholder for', product.id);
-                            return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
-                          }
-                          console.log('[DEBUG] Returning animated card for', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
-                          return (
-                            <motion.div
-                              key={product.id}
-                              className="flex items-center gap-4 glass-panel rounded-xl p-4"
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: -20 }}
-                              transition={{ duration: 0.3 }}
-                              data-product-id={product.id}
-                              onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
-                              onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
-                            >
-                              <img 
-                                src={product.image_url || '/placeholder.png'} 
-                                alt={product.title} 
-                                className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                                onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                  {product.title}
-                                </div>
-                                <div className="font-body text-orange-cream font-bold text-sm">
-                                  ${product.price.toFixed(2)}
-                                </div>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
+                      <img 
+                        src={product.image_url || '/placeholder.png'} 
+                        alt={product.title} 
+                        className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-display text-dark-green-start text-base mb-1 truncate">
+                          {product.title}
+                        </div>
+                        <div className="font-body text-orange-cream font-bold text-sm">
+                          ${product.price.toFixed(2)}
+                        </div>
                       </div>
-
-                      {error && (
-                        <div className="text-red-500 text-center mb-4">{error}</div>
-                      )}
-
-                      <button
-                        className="btn-primary w-full text-lg flex items-center justify-center gap-2"
-                        disabled={selectedProducts.length === 0 || isLoading}
-                        onClick={handleSubscribe}
-                      >
-                        {isLoading ? (
-                          <>
-                            <span className="animate-spin">⟳</span>
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            Subscribe
-                            <span className="font-bold">${total.toFixed(2)}</span>
-                          </>
-                        )}
-                      </button>
-                    </>
-                  )}
-                </div>
+                    </motion.div>
+                  );
+                })}
               </div>
-
-              {/* Catalog Link */}
-              <div className="p-6 border-t border-light-green-start/20">
-                <div className="text-center text-dark-green-start/80 text-sm">
-                  Can't find what you're looking for?{' '}
-                  <button
-                    type="button"
-                    className="inline underline font-medium px-2 py-1 rounded transition hover:bg-orange-cream/10 focus:outline-none focus:ring-2 focus:ring-orange-cream/30"
-                    style={{ textDecoration: 'underline', cursor: 'pointer', display: 'inline', background: 'none', border: 'none' }}
-                    onClick={() => redirectParent('https://www.brightsidesupplements.com/pages/bundle-builder')}
-                  >
-                    Browse our full catalog here
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Mobile Panel */}
-            <motion.div
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 md:hidden flex flex-col max-h-[80vh] border border-dark-green-start/30"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => {
-                setIsHovering(false);
-                onClose();
-              }}
-              data-summary-panel
-            >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-2">
-                <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto px-6 pb-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="font-display text-xl text-dark-green-start">Your Selection</h2>
-                  <button
-                    onClick={onClose}
-                    className="text-dark-green-start/70 hover:text-dark-green-start transition-colors"
-                  >
-                    <span className="text-2xl">×</span>
-                  </button>
-                </div>
-
-                {selectedProducts.length === 0 ? (
-                  <div className="text-dark-green-start/70 py-8 text-center">
-                    No products selected yet.
-                  </div>
+              {error && (
+                <div className="text-red-500 text-center mb-4">{error}</div>
+              )}
+              <button
+                className="btn-primary w-full text-lg flex items-center justify-center gap-2"
+                disabled={selectedProducts.length === 0 || isLoading}
+                onClick={handleSubscribe}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="animate-spin">⟳</span>
+                    Processing...
+                  </>
                 ) : (
                   <>
-                    <div className="space-y-4 mb-6">
-                      {selectedProducts.map((product) => {
-                        const isJustAdded = product.id === justAddedId;
-                        console.log('[DEBUG] Rendering product card:', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
-                        if (isJustAdded && !showInfo) {
-                          console.log('[DEBUG] Returning placeholder for', product.id);
-                          return <div style={{ height: '4rem' }} key={`placeholder-${product.id}`} />;
-                        }
-                        console.log('[DEBUG] Returning animated card for', product.id, 'isJustAdded:', isJustAdded, 'showInfo:', showInfo);
-                        return (
-                          <motion.div
-                            key={product.id}
-                            className="flex items-center gap-4 glass-panel rounded-xl p-4"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                            data-product-id={product.id}
-                            onAnimationStart={() => console.log('[DEBUG] Animation start for', product.id)}
-                            onAnimationComplete={() => console.log('[DEBUG] Animation complete for', product.id)}
-                          >
-                            <img 
-                              src={product.image_url || '/placeholder.png'} 
-                              alt={product.title} 
-                              className="h-16 w-16 object-contain rounded-lg flex-shrink-0"
-                              onLoad={() => console.log('[DEBUG] Image loaded for', product.id)}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-display text-dark-green-start text-base mb-1 truncate">
-                                {product.title}
-                              </div>
-                              <div className="font-body text-orange-cream font-bold text-sm">
-                                ${product.price.toFixed(2)}
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-
-                    {error && (
-                      <div className="text-red-500 text-center mb-4">{error}</div>
-                    )}
-
-                    <button
-                      className="btn-primary w-full text-lg flex items-center justify-center gap-2"
-                      disabled={selectedProducts.length === 0 || isLoading}
-                      onClick={handleSubscribe}
-                    >
-                      {isLoading ? (
-                        <>
-                          <span className="animate-spin">⟳</span>
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          Subscribe
-                          <span className="font-bold">${total.toFixed(2)}</span>
-                        </>
-                      )}
-                    </button>
+                    Subscribe
+                    <span className="font-bold">${total.toFixed(2)}</span>
                   </>
                 )}
-              </div>
-
-              {/* Catalog Link */}
-              <div className="px-6 pb-6 border-t border-light-green-start/20">
-                <div className="text-center text-dark-green-start/80 text-sm pt-4">
-                  Can't find what you're looking for?{' '}
-                  <button
-                    type="button"
-                    className="inline underline font-medium px-2 py-1 rounded transition hover:bg-orange-cream/10 focus:outline-none focus:ring-2 focus:ring-orange-cream/30"
-                    style={{ textDecoration: 'underline', cursor: 'pointer', display: 'inline', background: 'none', border: 'none' }}
-                    onClick={() => redirectParent('https://www.brightsidesupplements.com/pages/bundle-builder')}
-                  >
-                    Browse our full catalog here
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+      {/* Catalog Link */}
+      <div className="p-6 border-t border-light-green-start/20">
+        <div className="text-center text-dark-green-start/80 text-sm">
+          Can't find what you're looking for?{' '}
+          <button
+            type="button"
+            className="inline underline font-medium px-2 py-1 rounded transition hover:bg-orange-cream/10 focus:outline-none focus:ring-2 focus:ring-orange-cream/30"
+            style={{ textDecoration: 'underline', cursor: 'pointer', display: 'inline', background: 'none', border: 'none' }}
+            onClick={() => redirectParent('https://www.brightsidesupplements.com/pages/bundle-builder')}
+          >
+            Browse our full catalog here
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 };
 
