@@ -299,18 +299,29 @@ export default function HomePage() {
             const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
             const summaryPanel = document.querySelector('[data-summary-panel]');
             function tryAnimate(retries = 5) {
-              if (!sourceCard || !summaryPanel) return;
+              if (!sourceCard) {
+                console.log('[ANIMATION DEBUG] sourceCard not found for pid', pid);
+                return;
+              }
+              if (!summaryPanel) {
+                console.log('[ANIMATION DEBUG] summaryPanel not found');
+                return;
+              }
               // Find the index where the new product will appear
               const newList = [...filtered, { product: prod, catKey }];
               const productCards = summaryPanel.querySelectorAll('.glass-panel[data-product-id]');
               // Find the index in the new list where the product will be
               const targetIndex = newList.findIndex(item => item.catKey === catKey);
               const targetProductCard = productCards[targetIndex];
-              if (targetProductCard) {
-                animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
-              } else if (retries > 0) {
-                setTimeout(() => tryAnimate(retries - 1), 100);
+              if (!targetProductCard) {
+                console.log('[ANIMATION DEBUG] targetProductCard not found for targetIndex', targetIndex, 'newList', newList, 'productCards.length', productCards.length);
+                if (retries > 0) {
+                  setTimeout(() => tryAnimate(retries - 1), 100);
+                }
+                return;
               }
+              console.log('[ANIMATION DEBUG] Animating from sourceCard to targetProductCard', { pid, targetIndex });
+              animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
             }
             tryAnimate();
           }, 400);
@@ -373,9 +384,9 @@ export default function HomePage() {
           </ChatSidebar>
         </div>
         {/* Gap between chat and main content */}
-        <div className="hidden md:block" style={{ width: '48px' }} />
+        <div className="hidden md:block" style={{ width: '16px' }} />
         {/* Main Content */}
-        <div className="flex-1 px-4 py-8 max-w-[900px] mx-auto">
+        <div className="flex-1 px-4 py-8 max-w-[1200px] mx-auto">
           <main>
             <div className="space-y-8">
               {PRODUCT_CATEGORIES.map((cat, idx) => (
@@ -455,7 +466,7 @@ export default function HomePage() {
           </main>
         </div>
         {/* Gap between main content and summary panel */}
-        <div className="hidden md:block" style={{ width: '48px' }} />
+        <div className="hidden md:block" style={{ width: '16px' }} />
         {/* Summary Panel - always open */}
         <div className="w-96 flex-shrink-0 flex flex-col z-30" style={{ minHeight: '100vh' }}>
           <SummarySidePanel
