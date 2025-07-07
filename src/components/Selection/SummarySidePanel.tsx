@@ -38,6 +38,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   const [showInfo, setShowInfo] = useState(false);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastAnimatedId = useRef<string | null>(null);
+  const lastAnimated = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
 
   // Detect when a new product is added
   useEffect(() => {
@@ -71,13 +72,14 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       effectRunTime: Date.now(),
       location: window.location.pathname
     });
-    // Only run if a new product was just added and showInfo is true, and not already animated for this id
+    // Only run if a new product was just added and showInfo is true, and not already animated for this id within 1 second
+    const now = Date.now();
     if (
       justAddedId &&
       showInfo &&
       lastSelectedProductId &&
       lastSelectedProductCatKey &&
-      justAddedId !== lastAnimatedId.current
+      (justAddedId !== lastAnimated.current.id || now - lastAnimated.current.time > 1000)
     ) {
       console.log('[ANIMATION DEBUG] Animation effect condition met', {
         justAddedId,
@@ -112,15 +114,15 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
         // After animation, reset justAddedId so this only runs once per selection
         setJustAddedId(null);
         setShowInfo(false);
-        lastAnimatedId.current = justAddedId;
-        console.log('[ANIMATION DEBUG] Reset justAddedId and showInfo after animation, set lastAnimatedId:', justAddedId);
+        lastAnimated.current = { id: justAddedId, time: now };
+        console.log('[ANIMATION DEBUG] Reset justAddedId and showInfo after animation, set lastAnimated:', lastAnimated.current);
       });
     }
   }, [justAddedId, showInfo, lastSelectedProductId, lastSelectedProductCatKey, selectedProducts]);
 
-  // Also, reset lastAnimatedId.current when openSection/category changes (if you pass openSection as a prop, or use lastSelectedProductCatKey)
+  // Also, reset lastAnimated.current when openSection/category changes (if you pass openSection as a prop, or use lastSelectedProductCatKey)
   useEffect(() => {
-    lastAnimatedId.current = null;
+    lastAnimated.current = { id: null, time: 0 };
   }, [lastSelectedProductCatKey]);
 
   const handleSubscribe = () => {
