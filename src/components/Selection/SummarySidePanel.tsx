@@ -66,10 +66,19 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       showInfo,
       lastSelectedProductId,
       lastSelectedProductCatKey,
-      selectedProducts: selectedProducts.map(p => p.id)
+      selectedProducts: selectedProducts.map(p => p.id),
+      effectRunTime: Date.now(),
+      location: window.location.pathname
     });
     // Only run if a new product was just added and showInfo is true
     if (justAddedId && showInfo && lastSelectedProductId && lastSelectedProductCatKey) {
+      console.log('[ANIMATION DEBUG] Animation effect condition met', {
+        justAddedId,
+        showInfo,
+        lastSelectedProductId,
+        lastSelectedProductCatKey,
+        selectedProducts: selectedProducts.map(p => p.id)
+      });
       // Try to find the source card in the main content
       const sourceCard = document.querySelector(`[data-product-id="${lastSelectedProductId}"]`);
       // Try to find the target card in the summary panel
@@ -206,22 +215,8 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
           )}
         </div>
       </div>
-      {/* Catalog Link */}
-      <div className="p-6 border-t border-light-green-start/20">
-        <div className="text-center text-dark-green-start/80 text-sm">
-          Can't find what you're looking for?{' '}
-          <button
-            type="button"
-            className="inline underline font-medium px-2 py-1 rounded transition hover:bg-orange-cream/10 focus:outline-none focus:ring-2 focus:ring-orange-cream/30"
-            style={{ textDecoration: 'underline', cursor: 'pointer', display: 'inline', background: 'none', border: 'none' }}
-            onClick={() => redirectParent('https://www.brightsidesupplements.com/pages/bundle-builder')}
-          >
-            Browse our full catalog here
-          </button>
-        </div>
-      </div>
     </aside>
   );
 };
 
-export default SummarySidePanel; 
+export default SummarySidePanel;
