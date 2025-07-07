@@ -37,6 +37,7 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastAnimatedId = useRef<string | null>(null);
 
   // Detect when a new product is added
   useEffect(() => {
@@ -70,8 +71,14 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
       effectRunTime: Date.now(),
       location: window.location.pathname
     });
-    // Only run if a new product was just added and showInfo is true
-    if (justAddedId && showInfo && lastSelectedProductId && lastSelectedProductCatKey) {
+    // Only run if a new product was just added and showInfo is true, and not already animated for this id
+    if (
+      justAddedId &&
+      showInfo &&
+      lastSelectedProductId &&
+      lastSelectedProductCatKey &&
+      justAddedId !== lastAnimatedId.current
+    ) {
       console.log('[ANIMATION DEBUG] Animation effect condition met', {
         justAddedId,
         showInfo,
@@ -105,10 +112,16 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
         // After animation, reset justAddedId so this only runs once per selection
         setJustAddedId(null);
         setShowInfo(false);
-        console.log('[ANIMATION DEBUG] Reset justAddedId and showInfo after animation');
+        lastAnimatedId.current = justAddedId;
+        console.log('[ANIMATION DEBUG] Reset justAddedId and showInfo after animation, set lastAnimatedId:', justAddedId);
       });
     }
   }, [justAddedId, showInfo, lastSelectedProductId, lastSelectedProductCatKey, selectedProducts]);
+
+  // Also, reset lastAnimatedId.current when openSection/category changes (if you pass openSection as a prop, or use lastSelectedProductCatKey)
+  useEffect(() => {
+    lastAnimatedId.current = null;
+  }, [lastSelectedProductCatKey]);
 
   const handleSubscribe = () => {
     if (selectedProducts.length === 0) return;
