@@ -475,8 +475,8 @@ export default function HomePage() {
           <SummarySidePanel
             selectedProducts={selectedProducts.map(item => item.product)}
             total={selectedProducts.reduce((sum, item) => sum + (item.product.price || 0), 0)}
-            lastSelectedProductId={lastSelectedProduct?.id}
-            lastSelectedProductCatKey={lastSelectedProductCatKey}
+            lastSelectedProductId={lastSelectedProduct?.id ?? undefined}
+            lastSelectedProductCatKey={lastSelectedProductCatKey ?? undefined}
           />
         </div>
       </div>
