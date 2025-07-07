@@ -43,10 +43,12 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
     if (selectedProducts.length === 0) return;
     const lastProduct = selectedProducts[selectedProducts.length - 1];
     if (lastProduct && lastProduct.id !== justAddedId) {
+      console.log('[ANIMATION DEBUG] Setting justAddedId:', lastProduct.id, 'Previous justAddedId:', justAddedId);
       setJustAddedId(lastProduct.id);
       setShowInfo(false);
       if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
       animationTimeoutRef.current = setTimeout(() => {
+        console.log('[ANIMATION DEBUG] Setting showInfo: true for justAddedId:', lastProduct.id);
         setShowInfo(true);
       }, IMAGE_ANIMATION_DURATION);
     }
@@ -59,6 +61,13 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
   }, []);
 
   useEffect(() => {
+    console.log('[ANIMATION DEBUG] Animation useEffect triggered', {
+      justAddedId,
+      showInfo,
+      lastSelectedProductId,
+      lastSelectedProductCatKey,
+      selectedProducts: selectedProducts.map(p => p.id)
+    });
     // Only run if a new product was just added and showInfo is true
     if (justAddedId && showInfo && lastSelectedProductId && lastSelectedProductCatKey) {
       // Try to find the source card in the main content
