@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Layout/Header';
 import Footer from '../components/Layout/Footer';
 import ChatSidebar from '../components/Chat/ChatSidebar';
@@ -10,7 +10,7 @@ import CategoryPanel from '../components/Selection/CategoryPanel';
 import ProductRow from '../components/Selection/ProductRow';
 import SummaryPanel from '../components/Selection/SummaryPanel';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
-import SummarySidePanel from '../components/Selection/SummarySidePanel';
+import SummarySidePanel, { SummaryPanelHandle } from '../components/Selection/SummarySidePanel';
 import { PRODUCT_CATEGORIES, AI_PROMPTS } from '../lib/constants';
 import { Product, ChatMessage } from '../types';
 import { fetchProducts, askAboutProducts, fetchAllProducts, classifyGPTMessage, compareProductsWithAI, explainProductWithAI } from '../lib/api';
@@ -42,6 +42,8 @@ export default function HomePage() {
     setLastSelectedProduct(null);
     setLastSelectedProductCatKey(null);
   }, [openSection]);
+
+  const summaryPanelRef = useRef<SummaryPanelHandle>(null);
 
   // Layout constants for perfect alignment
   const CHAT_WIDTH = 384;
@@ -306,36 +308,9 @@ export default function HomePage() {
           // Add new product to end or replace in place
           setLastSelectedProduct(prod);
           setLastSelectedProductCatKey(catKey);
-          // Animation logic: find the correct index (replacement or end)
+          // Trigger the animation directly
           setTimeout(() => {
-            const sourceCard = document.querySelector(`[data-product-id="${pid}"]`);
-            const summaryPanel = document.querySelector('[data-summary-panel]');
-            function tryAnimate(retries = 5) {
-              if (!sourceCard) {
-                console.log('[ANIMATION DEBUG] sourceCard not found for pid', pid);
-                return;
-              }
-              if (!summaryPanel) {
-                console.log('[ANIMATION DEBUG] summaryPanel not found');
-                return;
-              }
-              // Find the index where the new product will appear
-              const newList = [...filtered, { product: prod, catKey }];
-              const productCards = summaryPanel.querySelectorAll('.glass-panel[data-product-id]');
-              // Find the index in the new list where the product will be
-              const targetIndex = newList.findIndex(item => item.catKey === catKey);
-              const targetProductCard = productCards[targetIndex];
-              if (!targetProductCard) {
-                console.log('[ANIMATION DEBUG] targetProductCard not found for targetIndex', targetIndex, 'newList', newList, 'productCards.length', productCards.length);
-                if (retries > 0) {
-                  setTimeout(() => tryAnimate(retries - 1), 100);
-                }
-                return;
-              }
-              console.log('[ANIMATION DEBUG] Animating from sourceCard to targetProductCard', { pid, targetIndex });
-              animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
-            }
-            tryAnimate();
+            summaryPanelRef.current?.triggerAnimation(pid);
           }, 400);
           // Shimmer logic (unchanged)
           if (!nextShimmerShown[catKey]) {
@@ -482,10 +457,9 @@ export default function HomePage() {
         {/* Summary Panel - always open */}
         <div className="w-96 flex-shrink-0 flex flex-col z-30" style={{ minHeight: '100vh' }}>
           <SummarySidePanel
+            ref={summaryPanelRef}
             selectedProducts={selectedProducts.map(item => item.product)}
             total={selectedProducts.reduce((sum, item) => sum + (item.product.price || 0), 0)}
-            lastSelectedProductId={lastSelectedProduct?.id ?? undefined}
-            lastSelectedProductCatKey={lastSelectedProductCatKey ?? undefined}
           />
         </div>
       </div>
