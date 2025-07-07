@@ -91,9 +91,12 @@ const SummarySidePanel: React.FC<SummarySidePanelProps> = ({
         return;
       }
       console.log('[ANIMATION DEBUG] (SummarySidePanel) Animating from sourceCard to targetProductCard', { lastSelectedProductId, targetIndex });
-      // Import animateProductImage at the top if not already
       import('../../lib/animateProductImage').then(({ animateProductImage }) => {
         animateProductImage(sourceCard as HTMLElement, targetProductCard as HTMLElement);
+        // After animation, reset justAddedId so this only runs once per selection
+        setJustAddedId(null);
+        setShowInfo(false);
+        console.log('[ANIMATION DEBUG] Reset justAddedId and showInfo after animation');
       });
     }
   }, [justAddedId, showInfo, lastSelectedProductId, lastSelectedProductCatKey, selectedProducts]);
