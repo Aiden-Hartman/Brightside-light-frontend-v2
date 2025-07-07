@@ -79,7 +79,7 @@ const SummarySidePanel = forwardRef<SummaryPanelHandle, SummarySidePanelProps>(
     };
 
     return (
-      <aside className="w-96 h-full flex flex-col z-30 bg-white shadow-2xl rounded-l-2xl border border-dark-green-start/30" style={{ minHeight: '100vh' }} data-summary-panel>
+      <aside className="w-96 h-40 flex flex-col z-30 bg-white shadow-2xl rounded-l-2xl border border-dark-green-start/30" data-summary-panel>
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">

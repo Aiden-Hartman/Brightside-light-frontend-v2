@@ -334,7 +334,7 @@ export default function HomePage() {
       {/* Main 3-panel layout */}
       <div className="flex flex-1 flex-col md:flex-row w-full max-w-full mx-auto" style={{ minHeight: '100vh' }}>
         {/* Chat Sidebar */}
-        <div className="w-96 flex-shrink-0 flex flex-col z-30" style={{ minHeight: '100vh' }}>
+        <div className="w-96 flex-shrink-0 flex flex-col z-30">
           <ChatSidebar className="glass-panel rounded-r-3xl h-full">
             <ChatWindow>
               {chatMessages.length === 0 ? (
@@ -455,7 +455,7 @@ export default function HomePage() {
         {/* Gap between main content and summary panel */}
         <div className="hidden md:block" style={{ width: '16px' }} />
         {/* Summary Panel - always open */}
-        <div className="w-96 flex-shrink-0 flex flex-col z-30" style={{ minHeight: '100vh' }}>
+        <div className="w-96 flex-shrink-0 flex flex-col z-30">
           <SummarySidePanel
             ref={summaryPanelRef}
             selectedProducts={selectedProducts.map(item => item.product)}
