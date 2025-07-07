@@ -37,6 +37,12 @@ export default function HomePage() {
   // Add state for lastSelectedProductCatKey
   const [lastSelectedProductCatKey, setLastSelectedProductCatKey] = useState<string | null>(null);
 
+  // Add this effect to reset animation trigger state whenever openSection changes
+  useEffect(() => {
+    setLastSelectedProduct(null);
+    setLastSelectedProductCatKey(null);
+  }, [openSection]);
+
   // Layout constants for perfect alignment
   const CHAT_WIDTH = 384;
   const MAIN_WIDTH = 900;
