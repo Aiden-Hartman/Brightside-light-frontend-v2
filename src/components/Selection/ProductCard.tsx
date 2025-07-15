@@ -112,23 +112,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, selected, onSelect, 
           className="h-32 w-full object-contain mb-4 transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
-        {product.tier && (
-          <motion.span
-            className={`absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1
-              ${product.tier.toLowerCase() === 'good' ? 'bg-green-200 text-dark-green-start border border-green-400 shadow-sm' : ''}
-              ${product.tier.toLowerCase() === 'better' ? 'bg-orange-200 text-orange-cream border border-orange-300 shadow-md' : ''}
-              ${product.tier.toLowerCase() === 'best' ? 'bg-yellow-200 text-yellow-900 border border-yellow-400 shadow-lg' : ''}
-            `}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {product.tier.toLowerCase() === 'good' && <span role="img" aria-label="good" className="">👍</span>}
-            {product.tier.toLowerCase() === 'better' && <span role="img" aria-label="better" className="">🚀</span>}
-            {product.tier.toLowerCase() === 'best' && <span role="img" aria-label="best" className="">🏆</span>}
-            {product.tier.charAt(0).toUpperCase() + product.tier.slice(1)}
-          </motion.span>
-        )}
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between">

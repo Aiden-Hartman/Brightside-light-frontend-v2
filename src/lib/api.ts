@@ -3,7 +3,7 @@ import { AI_PROMPTS } from './constants';
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'https://brightside-light-shopify-assistant.onrender.com/api/v1';
 
-export async function fetchProducts(filters: object, limit: number = 3): Promise<Product[]> {
+export async function fetchProducts(filters: object, limit: number = 10): Promise<Product[]> {
   try {
     const body = { filters, limit };
     const res = await fetch(`${API_BASE}/search`, {
@@ -20,7 +20,6 @@ export async function fetchProducts(filters: object, limit: number = 3): Promise
       price: p.price,
       description: p.description || 'No description available',
       image_url: p.image_url || '',
-      tier: p.tier || 'unspecified',
       category: p.category || 'uncategorized',
       variant_id: p.variant_id,
     }));

@@ -7,7 +7,6 @@ export function normalizeProduct(product: Partial<Product>): Product {
     image: product.image || '/placeholder.png',
     price: typeof product.price === 'number' ? product.price : 0,
     description: product.description || '',
-    tier: product.tier,
     ...product,
   };
 }

@@ -4,7 +4,6 @@ export interface Product {
   price: number;
   description?: string;
   image_url?: string;
-  tier?: string;
   category?: string;
   variant_id?: number;
   [key: string]: any;

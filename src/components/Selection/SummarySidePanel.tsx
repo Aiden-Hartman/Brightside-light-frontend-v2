@@ -12,16 +12,8 @@ interface SummarySidePanelProps {
   total: number;
 }
 
-const TIER_ORDER = ['good', 'better', 'best'];
-function sortByTier(products: Product[]): Product[] {
-  return [...products].sort((a, b) => {
-    const aIdx = TIER_ORDER.indexOf((a.tier || '').toLowerCase());
-    const bIdx = TIER_ORDER.indexOf((b.tier || '').toLowerCase());
-    if (aIdx === -1 && bIdx === -1) return 0;
-    if (aIdx === -1) return 1;
-    if (bIdx === -1) return -1;
-    return aIdx - bIdx;
-  });
+function sortByPrice(products: Product[]): Product[] {
+  return [...products].sort((a, b) => a.price - b.price);
 }
 
 const SummarySidePanel = forwardRef<SummaryPanelHandle, SummarySidePanelProps>(

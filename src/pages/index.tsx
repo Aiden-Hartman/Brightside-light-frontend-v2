@@ -59,7 +59,7 @@ export default function HomePage() {
     if (categoryProducts[openSection] || getCachedProducts(openSection)) return;
     setCategoryLoading((prev) => ({ ...prev, [openSection]: true }));
     setCategoryError((prev) => ({ ...prev, [openSection]: false }));
-    fetchProducts({ category: openSection }, 3)
+    fetchProducts({ category: openSection })
       .then((products) => {
         if (products.length > 0) {
           setCachedProducts(openSection, products);

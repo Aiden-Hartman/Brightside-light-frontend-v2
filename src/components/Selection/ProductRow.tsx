@@ -10,21 +10,13 @@ interface ProductRowProps {
   onExplainWithAI?: (product: Product) => void;
 }
 
-const TIER_ORDER = ['good', 'better', 'best'];
-function sortByTier(products: Product[]): Product[] {
-  return [...products].sort((a, b) => {
-    const aIdx = TIER_ORDER.indexOf((a.tier || '').toLowerCase());
-    const bIdx = TIER_ORDER.indexOf((b.tier || '').toLowerCase());
-    if (aIdx === -1 && bIdx === -1) return 0;
-    if (aIdx === -1) return 1;
-    if (bIdx === -1) return -1;
-    return aIdx - bIdx;
-  });
+function sortByPrice(products: Product[]): Product[] {
+  return [...products].sort((a, b) => a.price - b.price);
 }
 
 const ProductRow: React.FC<ProductRowProps> = ({ products, selectedProductIds, onSelect, onExplainWithAI }) => (
   <div className="grid grid-cols-3 gap-6">
-    {sortByTier(products).map((product, index) => (
+    {sortByPrice(products).map((product, index) => (
       <motion.div
         key={product.id}
         initial={{ opacity: 0, y: 20 }}
