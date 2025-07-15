@@ -1,9 +1,11 @@
 export const PRODUCT_CATEGORIES = [
-  { key: 'general-wellness', label: 'General Wellness' },
+  { key: 'daily-core-essentials', label: 'Daily Core Essentials' },
+  { key: 'cognitive-clarity', label: 'Cognitive Clarity' },
   { key: 'immune-support', label: 'Immune Support' },
-  { key: 'digestion', label: 'Digestion' },
-  { key: 'heart-health', label: 'Heart Health' },
-  { key: 'brain-focus', label: 'Brain Focus' },
+  { key: 'digestive-balance', label: 'Digestive Balance' },
+  { key: 'omega-essentials', label: 'Omega Essentials' },
+  { key: 'heart-health-support', label: 'Heart Health Support' },
+  { key: 'additional-nutrients', label: 'Additional Nutrients' },
 ];
 
 // Custom prompts for AI features
